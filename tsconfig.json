@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
+    "target": "es2015",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "react",
+    "baseUrl": ".",
+    "types": ["react", "node"],
+    "skipLibCheck": true,
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
