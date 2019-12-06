@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 
 import { Theme } from '../styles';
 import { getObservationPoints } from '../utils/api';
+import { ObsPointData } from '../utils/types';
+import ObservationPoint from './ObservationPoint';
 
 const position = [60.192059, 24.945831];
 
 const SeurantaMap: React.FC<{}> = ({}) => {
-  const [observationPoints, setObservationPoints] = useState([]);
+  const [obsPoints, setObsPoints] = useState<ObsPointData[]>([]);
 
   useEffect(() => {
-    getObservationPoints().then(setObservationPoints);
-  }, [])
+    getObservationPoints().then(setObsPoints);
+  }, []);
 
   useEffect(() => {
-    console.log(observationPoints);
-  }, [observationPoints])
+    if (obsPoints.length > 0) {
+      console.log(obsPoints[0].lat);
+    }
+  }, [obsPoints]);
 
   return (
     <MapContainer center={position} zoom={14}>
@@ -25,13 +28,9 @@ const SeurantaMap: React.FC<{}> = ({}) => {
         url="http://tiles.kartat.kapsi.fi/taustakartta/{z}/{x}/{y}.png"
         attribution='&copy; Karttamateriaali <a href="http://www.maanmittauslaitos.fi/avoindata">Maanmittauslaitos</a>'
       />
-      <Marker position={position}>
-        <Popup>
-          A pretty CSS3 popup.
-          <br />
-          Easily customizable.
-        </Popup>
-      </Marker>
+      {obsPoints.map((item, key) => (
+        <ObservationPoint key={key} obs={item} />
+      ))}
     </MapContainer>
   );
 };
