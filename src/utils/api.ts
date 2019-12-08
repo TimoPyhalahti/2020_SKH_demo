@@ -23,7 +23,7 @@ export const getObservationPoints = (): Promise<ObsPointData[]> => {
     .then(({ data }) => {
       const items: ObsPointData[] = data.map((item: any) => ({
         id: item.service_request_id,
-        date: Date.parse(item.saved_datetime),
+        date: Date.parse(item.requested_datetime),
         serviceName: item.service_name,
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
@@ -47,7 +47,7 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
     .then(({ data }) => {
       const items: MonInterestData[] = data.map((item: any) => ({
         id: item.service_request_id,
-        date: Date.parse(item.saved_datetime),
+        date: Date.parse(item.requested_datetime),
         obsId: item.attributes.string_201911180958422,
         monInterestDefId: item.attributes.string_201911180959219,
         lat: Number(item.lat.replace(/,/, '.')),
@@ -73,7 +73,7 @@ export const getMonInterestDefs = (): Promise<MonInterestDefData[]> => {
     .then(({ data }) => {
       const items: MonInterestDefData[] = data.map((item: any) => ({
         id: item.service_request_id,
-        date: Date.parse(item.saved_datetime),
+        date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
         Tv: Number(item.attributes.monint_Tv_number_201911181747260.replace(/,/, '.')),
@@ -108,7 +108,7 @@ export const getMonInterestTriggers = (): Promise<MonInterestTriggerData[]> => {
     .then(({ data }) => {
       const items: MonInterestTriggerData[] = data.map((item: any) => ({
         id: item.service_request_id,
-        date: Date.parse(item.saved_datetime),
+        date: Date.parse(item.requested_datetime),
         monInterestId:
           item.attributes
             .monint_startevent_siteofinterest_string_201912031300511,
@@ -149,7 +149,7 @@ export const getObservationData = (serviceCode: string): Promise<ObsData[]> => {
     .then(({ data }) => {
       const items: ObsData[] = data.map((item: any) => ({
         id: item.service_request_id,
-        date: Date.parse(item.saved_datetime),
+        date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
       }));
