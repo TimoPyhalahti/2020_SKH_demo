@@ -3,17 +3,27 @@ import styled from 'styled-components';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 
 import { Theme } from '../styles';
-import { getObservationPoints } from '../utils/api';
+import {
+  getObservationPoints,
+  getMonInterestDefs,
+  getMonInterestTriggers,
+  getMonitoringInterests,
+  getObservationData,
+} from '../utils/api';
 import { ObsPointData } from '../utils/types';
 import ObservationPoint from './ObservationPoint';
 
-const position = [60.192059, 24.945831];
+const position = [60.2344, 25.0337];
 
 const SeurantaMap: React.FC<{}> = ({}) => {
   const [obsPoints, setObsPoints] = useState<ObsPointData[]>([]);
 
   useEffect(() => {
     getObservationPoints().then(setObsPoints);
+    // getMonInterestDefs();
+    // getMonitoringInterests();
+    // getMonInterestTriggers();
+    // getObservationData('snow_combined_service_code_201806122300251');
   }, []);
 
   useEffect(() => {
@@ -28,11 +38,8 @@ const SeurantaMap: React.FC<{}> = ({}) => {
         url="http://tiles.kartat.kapsi.fi/taustakartta/{z}/{x}/{y}.png"
         attribution='&copy; Karttamateriaali <a href="http://www.maanmittauslaitos.fi/avoindata">Maanmittauslaitos</a>'
       />
-      <ObservationPoint
-        obs={{ lat: position[0], long: position[1], serviceName: 'asdfsad' }}
-      />
-      {obsPoints.map((item, key) => (
-        <ObservationPoint key={key} obs={item} />
+      {obsPoints.map(item => (
+        <ObservationPoint key={item.id} obs={item} />
       ))}
     </MapContainer>
   );
