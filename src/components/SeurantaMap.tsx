@@ -28,6 +28,9 @@ const SeurantaMap: React.FC<{}> = ({}) => {
         url="http://tiles.kartat.kapsi.fi/taustakartta/{z}/{x}/{y}.png"
         attribution='&copy; Karttamateriaali <a href="http://www.maanmittauslaitos.fi/avoindata">Maanmittauslaitos</a>'
       />
+      <ObservationPoint
+        obs={{ lat: position[0], long: position[1], serviceName: 'asdfsad' }}
+      />
       {obsPoints.map((item, key) => (
         <ObservationPoint key={key} obs={item} />
       ))}
