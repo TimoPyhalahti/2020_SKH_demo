@@ -20,7 +20,6 @@ const Container: any = styled.div`
   display: flex;
   flex: 1;
   background-color: ${Theme.color.primary};
-  margin: 5px;
 `;
 
 const Loading: any = styled.img.attrs(() => ({
