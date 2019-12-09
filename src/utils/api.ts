@@ -48,7 +48,7 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
       const items: MonInterestData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
-        obsId: item.attributes.string_201911180958422,
+        obsPointId: item.attributes.string_201911180958422,
         monInterestDefId: item.attributes.string_201911180959219,
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
@@ -62,7 +62,7 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
     });
 };
 
-export const getMonInterestDefs = (): Promise<MonInterestDefData[]> => {
+export const getMonitoringInterestDefs = (): Promise<MonInterestDefData[]> => {
   return axios
     .get(ENTRYPOINT, {
       params: {
@@ -97,7 +97,7 @@ export const getMonInterestDefs = (): Promise<MonInterestDefData[]> => {
     });
 };
 
-export const getMonInterestTriggers = (): Promise<MonInterestTriggerData[]> => {
+export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[]> => {
   return axios
     .get(ENTRYPOINT, {
       params: {
