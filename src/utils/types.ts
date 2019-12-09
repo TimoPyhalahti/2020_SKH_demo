@@ -4,6 +4,16 @@ export interface ObsPointData {
   lat: number;
   long: number;
   serviceName: string;
+  radius?: number;
+  Tv?: number;
+  Ts?: number;
+  triggerDate?: Date;
+  serviceId?: string;
+  Smin?: number;
+  Smax?: number;
+  Td?: number;
+  Sd?: number;
+  kSd?: number;
 }
 
 export interface MonInterestData {
