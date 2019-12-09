@@ -3,7 +3,7 @@ import { createGlobalStyle, css } from 'styled-components';
 // try coolors.co
 export const Theme: any = {
   color: {
-    primary: '#2C0E37',
+    primary: '#B3E28A',
     secondary: '#DAA89B',
   },
   font: {
