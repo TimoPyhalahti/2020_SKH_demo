@@ -28,6 +28,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
   const [monInterestDefs, setMonInterestDefs] = useState<any>(null);
   const [monInterests, setMonInterests] = useState<any>(null);
   const [monInterestTriggers, setMonInterestTriggers] = useState<any>(null);
+  const [obs, setObs] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (obsPoints && monInterestTriggers && monInterestDefs && monInterests) {
+    if (obsPoints && obs && monInterestDefs && monInterests) {
       const items = obsPoints.map(item => {
         for (let i = 0; i < monInterests.length; i++) {
           const x = monInterests[i];
@@ -54,6 +55,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
             }
 
             for (let k = 0; k < monInterestTriggers.length; k++) {
+              console.log(obs)
               const z = monInterestTriggers[k];
               if (x.id === z.monInterestId) {
                 item.triggerDate = z.date;
@@ -74,7 +76,25 @@ const SeurantaMap: React.FC<{}> = ({}) => {
       setLoading(false);
       setObsPointItems(items);
     }
-  }, [obsPoints, monInterestTriggers, monInterestDefs, monInterests]);
+  }, [obsPoints, obs, monInterestDefs, monInterests]);
+
+  useEffect(() => {
+    if (monInterestTriggers) {
+      const items = [];
+      const services: string[] = [];
+      monInterestTriggers.forEach(trigger => {
+        const serv = trigger.monServiceId;
+        if (!services.includes(serv)) {
+          services.push(serv);
+        }
+      });
+      Promise.all(
+        services.map(item => {
+          return getObservationData(item);
+        }),
+      ).then(data => setObs(data));
+    }
+  }, [monInterestTriggers]);
 
   return (
     <>
@@ -89,6 +109,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
           {obsPointItems.map(item => (
             <ObservationPoint key={item.id} obs={item} />
           ))}
+          <LegendContainer>Havainnon tarve alueella</LegendContainer>
         </MapContainer>
       )}
     </>
@@ -99,6 +120,16 @@ const MapContainer: any = styled(Map)`
   display: flex;
   flex: 1;
   background: ${Theme.color.primary};
+`;
+
+const LegendContainer: any = styled.div`
+  display: flex;
+  flex: 1;
+  background: ${Theme.color.primary};
+`;
+
+const LegendHeader: any = styled.p`
+  font-sixe: 2rem;
 `;
 
 interface ObsPointItemData {

@@ -68,3 +68,8 @@ export interface ObsData {
   lat: number;
   long: number;
 }
+
+export interface ObsRes {
+  id: string;
+  items: ObsData[];
+}

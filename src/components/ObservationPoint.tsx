@@ -5,7 +5,6 @@ import { Marker, Popup, Circle } from 'react-leaflet';
 
 import { Theme } from '../styles';
 import { ObsPointData } from '../utils/types';
-import { unstable_renderSubtreeIntoContainer, render } from 'react-dom';
 
 interface Props {
   obs: ObsPointData;
@@ -29,7 +28,6 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     let color: string;
     let size: number;
     const settings: any = {};
-
     if (
       props.obs.Sd !== undefined &&
       props.obs.Smax !== undefined &&
@@ -37,19 +35,14 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     ) {
       const index = Math.max(Math.min(Math.floor(props.obs.Sd / 20 + 1), 4), 0);
       color = COLORS[index];
-      size = 40 + index * 4;
+      size = 50 + index * 4;
       settings.levelOfNeed = LEVEL_OF_NEED[index];
-    } else {
-      size = 40;
-      color = NO_COLOR;
-    }
-
-    const icon = L.divIcon({
-      className: 'pin',
-      iconAnchor: [size / 2, size],
-      labelAnchor: [-6, 0],
-      popupAnchor: [0, (size - 4) * -1],
-      html: `<svg xmlns="http://www.w3.org/2000/svg" 
+      settings.icon = L.divIcon({
+        className: 'pin',
+        iconAnchor: [size / 2, size - 2],
+        labelAnchor: [-6, 0],
+        popupAnchor: [0, (size - 4) * -1],
+        html: `<svg xmlns="http://www.w3.org/2000/svg" 
         width="${size}" 
         height="${size}" 
         viewBox="0 0 24 24" 
@@ -61,10 +54,31 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
         class="feather feather-map-pin">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
         <circle cx="12" cy="10" r="3"></circle></svg>`,
-    });
+      });
+    } else {
+      size = 45;
+      color = NO_COLOR;
+      settings.levelOfNeed = 'ei määritetty';
+      settings.icon = L.divIcon({
+        className: 'pin',
+        iconAnchor: [size / 2, size],
+        labelAnchor: [-6, 0],
+        popupAnchor: [0, (size - 4) * -1],
+        html: `<svg xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 512 512"
+        transform="scale(1, -1)"
+        width="${size}" 
+        height="${size}"
+        stroke="black"
+        fill="gray"
+        stroke-width="1" 
+        stroke-linecap="round" 
+        >
+        <path d="M256 64L96 433.062 110.938 448 256 384l145.062 64L416 433.062z"/></svg>`,
+      });
+    }
 
     settings.color = color;
-    settings.icon = icon;
     setRenderSettings(settings);
   }, []);
 
@@ -72,22 +86,6 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     <>
       {renderSettings && (
         <>
-          (
-          <Point position={position} icon={renderSettings.icon}>
-            <Tooltip>
-              <Header>
-                {props.obs.serviceName} <br />
-              </Header>
-              <hr/>
-              {renderSettings.levelOfNeed && (
-                <Field><b>Havainnon tarve:</b>{' ' + renderSettings.levelOfNeed}</Field>
-              )}
-              {props.obs.serviceId && (
-                <Field><b>Ilmoituspalvelu:</b>{' ' + props.obs.serviceId}</Field>
-              )}
-            </Tooltip>
-          </Point>
-          )
           {props.obs.radius && (
             <Circle
               center={position}
@@ -99,6 +97,28 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
               fillOpacity={0.65}
             />
           )}
+          (
+          <Point position={position} icon={renderSettings.icon}>
+            <Tooltip>
+              <Header>
+                {props.obs.serviceName} <br />
+              </Header>
+              <hr />
+              {renderSettings.levelOfNeed && (
+                <Field>
+                  <b>Havainnon tarve:</b>
+                  {' ' + renderSettings.levelOfNeed}
+                </Field>
+              )}
+              {props.obs.serviceId && (
+                <Field>
+                  <b>Ilmoituspalvelu:</b>
+                  {' ' + props.obs.serviceId}
+                </Field>
+              )}
+            </Tooltip>
+          </Point>
+          )
         </>
       )}
     </>
@@ -110,7 +130,6 @@ const Point: any = styled(Marker)``;
 const Tooltip: any = styled(Popup)`
   flex: 1;
   flex-direction: column;
-
 `;
 
 const Header: any = styled.p`
