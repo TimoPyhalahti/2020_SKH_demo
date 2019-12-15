@@ -10,6 +10,7 @@ import { render } from 'react-dom';
 
 interface Props {
   obs: any;
+  openModal: any;
 }
 
 const NO_COLOR = 'gray';
@@ -45,8 +46,6 @@ const calculateS = (obs: any): any => {
   if (diffDays < obs.Tv) {
     phase = 1;
     S = obs.Sv + obs.kSv * diffHours;
-    console.log(obs)
-    console.log(S)
   } else if (diffDays < obs.Ts) {
     phase = 2;
     S = obs.Ss + obs.kSs * diffHours;
@@ -70,7 +69,6 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     let size: number;
     const settings: any = {};
     if (props.obs.radius !== undefined) {
-      console.log(props.obs.Td);
       const calcs = calculateS(props.obs);
       const realS = Math.max(Math.min(props.obs.Smax, calcs.S), props.obs.Smin);
       settings.S = calcs.S;
@@ -185,10 +183,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                 </Field>
               )}
               {props.obs.serviceId && (
-                <Field>
-                  <b>Ilmoituspalvelu:</b>
-                  {' ' + props.obs.serviceId}
-                </Field>
+                <Button onClick={props.openModal}>Lisää havainto</Button>
               )}
             </Tooltip>
           </Point>
@@ -215,6 +210,19 @@ const Field: any = styled.p`
   font-size: 0.8rem;
   line-height: 1rem;
   margin: 8px 0 0 0 !important;
+`;
+
+const Button: any = styled.p`
+  font-size: 1rem;
+  line-height: 1rem;
+  margin: 15px auto 5px auto !important;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  background: ${Theme.color.primary};
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 export default ObservationPoint;

@@ -20,10 +20,14 @@ import {
 import { haverSine } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
+import { prependOnceListener } from 'cluster';
 
 const position = [60.2295, 25.0205];
 
-const SeurantaMap: React.FC<{}> = ({}) => {
+const SeurantaMap: React.FC<any> = (props: {
+  openModal: any;
+  hidden: boolean;
+}) => {
   const [obsPointItems, setObsPointItems] = useState<ObsPointItemData[]>([]);
   const [obsPoints, setObsPoints] = useState<any>(null);
   const [monInterestDefs, setMonInterestDefs] = useState<any>(null);
@@ -176,7 +180,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
   }, [monInterestTriggers]);
 
   return (
-    <>
+    <div style={{ display: props.hidden ? 'none' : 'flex', flex: 1 }}>
       {loading ? (
         <Loading />
       ) : (
@@ -186,12 +190,16 @@ const SeurantaMap: React.FC<{}> = ({}) => {
             attribution='&copy; Karttamateriaali <a href="http://www.maanmittauslaitos.fi/avoindata">Maanmittauslaitos</a>'
           />
           {obsPointItems.map(item => (
-            <ObservationPoint key={item.id} obs={item} />
+            <ObservationPoint
+              key={item.id}
+              obs={item}
+              openModal={props.openModal}
+            />
           ))}
           <LegendContainer>Havainnon tarve alueella</LegendContainer>
         </MapContainer>
       )}
-    </>
+    </div>
   );
 };
 
