@@ -17,8 +17,8 @@ export const GlobalStyle: any = createGlobalStyle`
       @import url('https://fonts.googleapis.com/css?family=Lato|Varela+Round&display=swap');
 
       body {
-        font-family: 'Lato', sans-serif;
         font-family: 'Varela Round', sans-serif;
+        font-family: 'Lato', sans-serif;
 
         font-size: 16px;
         color: ${theme.color.primary};

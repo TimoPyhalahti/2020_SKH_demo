@@ -16,7 +16,7 @@ interface Props {
 const NO_COLOR = 'gray';
 const COLORS = ['#0eb51f', '#afde16', '#dce312', '#de8716', '#b5110e'];
 const LEVEL_OF_NEED = [
-  'ei tarvetta',
+  'hyvin vähäinen',
   'pieni',
   'keskisuuri',
   'suurehko',
@@ -101,20 +101,18 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
       settings.levelOfNeed = 'ei määritetty';
       settings.icon = L.divIcon({
         className: 'pin',
-        iconAnchor: [size / 2, size],
+        iconAnchor: [size / 2, size / 2],
         labelAnchor: [-6, 0],
         popupAnchor: [0, (size - 4) * -1],
         html: `<svg xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 512 512"
-        transform="scale(1, -1)"
-        width="${size}" 
-        height="${size}"
-        stroke="black"
-        fill="gray"
-        stroke-width="1" 
-        stroke-linecap="round" 
-        >
-        <path d="M256 64L96 433.062 110.938 448 256 384l145.062 64L416 433.062z"/></svg>`,
+          viewBox="0 0 512 512"
+          width="${size}" 
+          height="${size}"
+          stroke="black"
+          fill="black"
+          stroke-width="1" 
+          stroke-linecap="round"
+          ><path d="M405 136.798L375.202 107 256 226.202 136.798 107 107 136.798 226.202 256 107 375.202 136.798 405 256 285.798 375.202 405 405 375.202 285.798 256z"/></svg>`,
       });
     }
 

@@ -35,7 +35,7 @@ const Main: React.FC<Props> = ({}) => {
 const Container: any = styled.div`
   display: flex;
   flex: 1;
-  background-color: ${Theme.color.primary};
+  background-color: ${Theme.color.primary}
 `;
 
 const ModalContainer: any = styled.div`

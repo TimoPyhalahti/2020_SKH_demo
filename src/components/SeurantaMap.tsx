@@ -196,7 +196,9 @@ const SeurantaMap: React.FC<any> = (props: {
               openModal={props.openModal}
             />
           ))}
-          <LegendContainer>Havainnon tarve alueella</LegendContainer>
+          <LegendContainer>
+            <LegendImg />
+          </LegendContainer>
         </MapContainer>
       )}
     </div>
@@ -207,16 +209,26 @@ const MapContainer: any = styled(Map)`
   display: flex;
   flex: 1;
   background: ${Theme.color.primary};
+  font-family ${Theme.font.secondary};
 `;
 
 const LegendContainer: any = styled.div`
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
   display: flex;
   flex: 1;
-  background: ${Theme.color.primary};
+  z-index: 999;
 `;
 
-const LegendHeader: any = styled.p`
-  font-sixe: 2rem;
+const LegendImg: any = styled.img.attrs({
+  src: require('../assets/legend.svg'),
+})`
+  background-color: #ffffff;
+  padding: 10px;
+  height: 120px;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.65);
 `;
 
 interface ObsPointItemData {
