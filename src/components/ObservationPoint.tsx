@@ -5,9 +5,11 @@ import { Marker, Popup, Circle } from 'react-leaflet';
 
 import { Theme } from '../styles';
 import { ObsPointData } from '../utils/types';
+import { COPYFILE_FICLONE_FORCE } from 'constants';
+import { render } from 'react-dom';
 
 interface Props {
-  obs: ObsPointData;
+  obs: any;
 }
 
 const NO_COLOR = 'gray';
@@ -20,6 +22,45 @@ const LEVEL_OF_NEED = [
   'suuri',
 ];
 
+const getDays = (d1: any, d2: any): number => {
+  const diff = d1 - d2;
+  const days = Math.floor(diff / 1000 / 60 / 60 / 24);
+  return days;
+};
+
+const getHours = (d1: any, d2: any): number => {
+  const diff = d1 - d2;
+  const hours = Math.floor(diff / 1000 / 60 / 60);
+  return hours;
+};
+
+const calculateS = (obs: any): any => {
+  const now = Date.now();
+  const t0 = obs.t0;
+  let phase: number = 0;
+  let S: number = 0;
+  const diffDays = getDays(now, t0);
+  const diffHours = getHours(now, t0);
+
+  if (diffDays < obs.Tv) {
+    phase = 1;
+    S = obs.Sv + obs.kSv * diffHours;
+    console.log(obs)
+    console.log(S)
+  } else if (diffDays < obs.Ts) {
+    phase = 2;
+    S = obs.Ss + obs.kSs * diffHours;
+  } else if (diffDays < obs.Tr) {
+    phase = 3;
+    S = obs.Sr + obs.kSr * diffHours;
+  } else {
+    phase = 4;
+    S = -2;
+  }
+
+  return { phase, S };
+};
+
 const ObservationPoint: React.FC<Props> = (props: Props) => {
   const [renderSettings, setRenderSettings] = useState<any>(null);
   const position: number[] = [props.obs.lat, props.obs.long];
@@ -28,12 +69,13 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     let color: string;
     let size: number;
     const settings: any = {};
-    if (
-      props.obs.Sd !== undefined &&
-      props.obs.Smax !== undefined &&
-      props.obs.Smin !== undefined
-    ) {
-      const index = Math.max(Math.min(Math.floor(props.obs.Sd / 20 + 1), 4), 0);
+    if (props.obs.radius !== undefined) {
+      console.log(props.obs.Td);
+      const calcs = calculateS(props.obs);
+      const realS = Math.max(Math.min(props.obs.Smax, calcs.S), props.obs.Smin);
+      settings.S = calcs.S;
+      settings.phase = calcs.phase;
+      const index = Math.max(Math.min(Math.floor(realS / (100 / 5)), 4), 0);
       color = COLORS[index];
       size = 50 + index * 4;
       settings.levelOfNeed = LEVEL_OF_NEED[index];
@@ -108,6 +150,38 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                 <Field>
                   <b>Havainnon tarve:</b>
                   {' ' + renderSettings.levelOfNeed}
+                </Field>
+              )}
+              {props.obs.serviceId && (
+                <Field>
+                  <b>Ilmoituspalvelu:</b>
+                  {' ' + props.obs.serviceId}
+                </Field>
+              )}
+              {props.obs.t0 && (
+                <Field>
+                  <b>Seurantakiinnostuksen alku:</b>
+                  {(() => {
+                    const d = new Date(props.obs.t0);
+                    return (
+                      ' ' +
+                      d.getDate() +
+                      '/' +
+                      d.getMonth() +
+                      '/' +
+                      d.getFullYear() +
+                      ' ' +
+                      d.getHours() +
+                      ':' +
+                      d.getMinutes()
+                    );
+                  })()}
+                </Field>
+              )}
+              {renderSettings.phase > 0 && (
+                <Field>
+                  <b>Nykyinen seurantakiinnostuksen vaihe:</b>
+                  {' ' + renderSettings.phase}
                 </Field>
               )}
               {props.obs.serviceId && (

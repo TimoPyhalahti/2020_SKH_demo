@@ -7,7 +7,18 @@ export interface ObsPointData {
   radius?: number;
   Tv?: number;
   Ts?: number;
-  triggerDate?: Date;
+  Tr?: number;
+  Sv?: number;
+  Ss?: number;
+  Sr?: number;
+  kSv?: number;
+  kSs?: number;
+  kSr?: number;
+  Sinf?: number;
+  Somin?: number;
+  Spmin?: number;
+  Spmax?: number;
+  dSv?: number;
   serviceId?: string;
   Smin?: number;
   Smax?: number;
@@ -32,17 +43,19 @@ export interface MonInterestDefData {
   lat: number;
   long: number;
   Tv: number;
-  minNv: number;
-  maxNv: number;
-  dSv: number;
-  Sv: number;
-  kSv: number;
   Ts: number;
-  Ss: number;
-  kSs: number;
   Tr: number;
+  Sv: number;
+  Ss: number;
   Sr: number;
+  kSv: number;
+  kSs: number;
   kSr: number;
+  Sinf: number;
+  Somin: number;
+  Spmin: number;
+  Spmax: number;
+  dSv: number;
 }
 
 export interface MonInterestTriggerData {

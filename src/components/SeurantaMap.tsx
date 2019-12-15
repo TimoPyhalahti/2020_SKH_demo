@@ -17,6 +17,7 @@ import {
   MonInterestTriggerData,
   ObsData,
 } from '../utils/types';
+import { haverSine } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
 
@@ -35,30 +36,101 @@ const SeurantaMap: React.FC<{}> = ({}) => {
     getObservationPoints().then(setObsPoints);
     getMonitoringInterestDefs().then(setMonInterestDefs);
     getMonitoringInterests().then(setMonInterests);
-    getMonitoringInterestTriggers().then(setMonInterestTriggers);
-    // getObservationData('snow_combined_service_code_201806122300251');
+    getMonitoringInterestTriggers().then(arr => {
+      setMonInterestTriggers(
+        arr.sort((a: any, b: any) => {
+          return b.date - a.date;
+        }),
+      );
+    });
   }, []);
 
   useEffect(() => {
-    if (obsPoints && obs && monInterestDefs && monInterests) {
+    if (
+      obsPoints &&
+      obs &&
+      monInterestDefs &&
+      monInterests &&
+      monInterestTriggers
+    ) {
       const items = obsPoints.map(item => {
         for (let i = 0; i < monInterests.length; i++) {
           const x = monInterests[i];
           if (x.obsPointId === item.id) {
             item.radius = x.radius;
+
             for (let j = 0; j < monInterestDefs.length; j++) {
               const y = monInterestDefs[j];
               if (y.id === x.monInterestDefId) {
                 item.Tv = y.Tv;
+                item.Ts = y.Ts;
+                item.Tr = y.Tr;
+                item.Sv = y.Sv;
+                item.Ss = y.Ss;
+                item.Sr = y.Sr;
+                item.kSv = y.kSv;
+                item.kSs = y.kSs;
+                item.kSr = y.kSr;
+                item.Sinf = y.Sinf;
+                item.dSv = y.dSv;
+                item.Spmin = y.Spmin;
+                item.Spmax = y.Spmax;
+                item.Somin = y.Somin;
                 break;
               }
             }
 
             for (let k = 0; k < monInterestTriggers.length; k++) {
-              console.log(obs)
               const z = monInterestTriggers[k];
               if (x.id === z.monInterestId) {
-                item.triggerDate = z.date;
+                let t0: any = null;
+                if (z.obsId) {
+                  const serviceId = item.serviceId
+                    ? item.serviceId
+                    : z.monServiceId;
+                  if (serviceId) {
+                    for (let l = 0; l < obs.length; l++) {
+                      const zx = obs[l];
+                      if (zx.id === serviceId) {
+                        for (let a = 0; a < zx.items.length; a++) {
+                          const zy = zx.items[a];
+                          if (zy.id === z.obsId) {
+                            t0 = zy.date;
+                            break;
+                          }
+                        }
+                        break;
+                      }
+                    }
+                  }
+                }
+                const itemObs: any[] = [];
+                if (z.monServiceId) {
+                  for (let l = 0; l < obs.length; l++) {
+                    const zx = obs[l];
+                    if (zx.id === z.monServiceId) {
+                      for (let a = 0; a < zx.items.length; a++) {
+                        const zy = zx.items[a];
+                        if (
+                          haverSine(zy.lat, zy.long, item.lat, item.long) <=
+                          item.radius
+                        ) {
+                          itemObs.push(zy);
+                        }
+                      }
+                      break;
+                    }
+                  }
+                }
+
+                if (itemObs.length > 0 && !t0) {
+                  t0 = itemObs[itemObs.length - 1].date;
+                } else if (!t0) {
+                  t0 = z.date;
+                }
+
+                item.obs = itemObs;
+                item.t0 = t0;
                 item.serviceId = z.monServiceId;
                 item.Smin = z.Smin;
                 item.Smax = z.Smax;
@@ -76,7 +148,7 @@ const SeurantaMap: React.FC<{}> = ({}) => {
       setLoading(false);
       setObsPointItems(items);
     }
-  }, [obsPoints, obs, monInterestDefs, monInterests]);
+  }, [obsPoints, obs, monInterestDefs, monInterests, monInterestTriggers]);
 
   useEffect(() => {
     if (monInterestTriggers) {
@@ -92,7 +164,14 @@ const SeurantaMap: React.FC<{}> = ({}) => {
         services.map(item => {
           return getObservationData(item);
         }),
-      ).then(data => setObs(data));
+      ).then(data => {
+        data.forEach(el => {
+          el.items.sort((a: any, b: any) => {
+            return b.date - a.date;
+          });
+        });
+        setObs(data);
+      });
     }
   }, [monInterestTriggers]);
 
@@ -138,7 +217,7 @@ interface ObsPointItemData {
   lat: number;
   long: number;
   serviceName: string;
-  range: number;
+  radius: number;
   pVal: number;
 }
 

@@ -67,51 +67,58 @@ export const getMonitoringInterestDefs = (): Promise<MonInterestDefData[]> => {
   return axios
     .get(ENTRYPOINT, {
       params: {
-        service_code: 'monint_smodel_service_code_201911181743121',
+        service_code: 'monint_smodel_service_code_201912121702022',
         extension: 'true',
       },
     })
     .then(({ data }) => {
+      console.log(data)
       const items: MonInterestDefData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
         Tv: Number(
-          item.attributes.monint_Tv_number_201911181747260.replace(/,/, '.'),
-        ),
-        minNv: Number(
-          item.attributes.monint_minNv_number_201911181759422.replace(/,/, '.'),
-        ),
-        maxNv: Number(
-          item.attributes.monint_maxNv_number_201911181800316.replace(/,/, '.'),
-        ),
-        dSv: Number(
-          item.attributes.monint_dSv_number_201911181801125.replace(/,/, '.'),
-        ),
-        Sv: Number(
-          item.attributes.monint_Sv_number_201911181748151.replace(/,/, '.'),
-        ),
-        kSv: Number(
-          item.attributes.monint_kSv_number_201911181757490.replace(/,/, '.'),
+          item.attributes.monint_Tv_number_201912121702023.replace(/,/, '.'),
         ),
         Ts: Number(
-          item.attributes.monint_Ts_number_201911181749390.replace(/,/, '.'),
-        ),
-        Ss: Number(
-          item.attributes.monint_Ss_number_201911181751337.replace(/,/, '.'),
-        ),
-        kSs: Number(
-          item.attributes.monint_kSs_number_201911181755104.replace(/,/, '.'),
+          item.attributes.monint_Ts_number_201912121702030.replace(/,/, '.'),
         ),
         Tr: Number(
-          item.attributes.monint_Tr_number_201911181752532.replace(/,/, '.'),
+          item.attributes.monint_Tr_number_201912121702034.replace(/,/, '.'),
+        ),
+        Sv: Number(
+          item.attributes.monint_Sv_number_201912121702028.replace(/,/, '.'),
+        ),
+        Ss: Number(
+          item.attributes.monint_Ss_number_201912121702032.replace(/,/, '.'),
         ),
         Sr: Number(
-          item.attributes.monint_Sr_number_201911181753213.replace(/,/, '.'),
+          item.attributes.monint_Sr_number_201912121702035.replace(/,/, '.'),
+        ),
+        kSv: Number(
+          item.attributes.monint_kSv_number_201912121702029.replace(/,/, '.'),
+        ),
+        kSs: Number(
+          item.attributes.monint_kSs_number_201912121702033.replace(/,/, '.'),
         ),
         kSr: Number(
-          item.attributes.monint_kSr_number_201911181756432.replace(/,/, '.'),
+          item.attributes.monint_kSr_number_201912121702037.replace(/,/, '.'),
+        ),
+        Sinf: Number(
+          item.attributes.monint_Sinf_number_201912121702038.replace(/,/, '.'),
+        ),
+        dSv: Number(
+          item.attributes.monint_dSv_number_201912121702027.replace(/,/, '.'),
+        ),
+        Spmin: Number(
+          item.attributes.monint_Spmin_number_201912121753281.replace(/,/, '.'),
+        ),
+        Spmax: Number(
+          item.attributes.monint_Spmax_number_201912121756330.replace(/,/, '.'),
+        ),
+        Somin: Number(
+          item.attributes.monint_Somin_number_201912121743338.replace(/,/, '.'),
         ),
       }));
       return items;
