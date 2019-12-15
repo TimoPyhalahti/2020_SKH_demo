@@ -103,7 +103,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
         className: 'pin',
         iconAnchor: [size / 2, size / 2],
         labelAnchor: [-6, 0],
-        popupAnchor: [0, (size - 4) * -1],
+        popupAnchor: [0, 5],
         html: `<svg xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 512 512"
           width="${size}" 

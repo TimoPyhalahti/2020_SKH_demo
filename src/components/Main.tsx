@@ -55,8 +55,7 @@ const ModalContainer: any = styled.div`
 const ModalButton: any = styled.p`
   position: fixed;
   top: 5px;
-  right: 5px;
-  margin: 3px 10px 0 0;
+  right: 30px;
   font-size: 1.5rem;
   color: black;
   &:hover {
