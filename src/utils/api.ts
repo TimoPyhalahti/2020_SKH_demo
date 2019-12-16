@@ -72,7 +72,6 @@ export const getMonitoringInterestDefs = (): Promise<MonInterestDefData[]> => {
       },
     })
     .then(({ data }) => {
-      console.log(data)
       const items: MonInterestDefData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
@@ -138,6 +137,8 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
       },
     })
     .then(({ data }) => {
+      console.log('asdf')
+      console.log(data)
       const items: MonInterestTriggerData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
@@ -149,19 +150,7 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
         monServiceId:
           item.attributes.monint_startevent_initiatingsc_string_201912031300514,
         lat: Number(item.lat.replace(/,/, '.')),
-        long: Number(item.long.replace(/,/, '.')),
-        startPhase: Number(
-          item.attributes.monint_startevent_startphase_singlevaluelist_201912031300515.replace(
-            /,/,
-            '.',
-          ),
-        ),
-        passPhase: Number(
-          item.attributes.monint_startevent_passphases_multivaluelist_201912031300516.replace(
-            /,/,
-            '.',
-          ),
-        ),
+        lon: Number(item.long.replace(/,/, '.')),
         Smin: Number(
           item.attributes.monint_Smin_number_201912031319308.replace(/,/, '.'),
         ),
