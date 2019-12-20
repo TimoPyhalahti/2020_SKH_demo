@@ -180,6 +180,14 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                   {' ' + renderSettings.S}
                 </Field>
               )}
+              {props.obs.itemObs && (
+                <Field>
+                  <b>
+                    Havaintoja alueella seurantakiinnostuksen alun jälkeen:{' '}
+                  </b>
+                  {' ' + props.obs.itemObs.length}
+                </Field>
+              )}
               {renderSettings.phase > 0 && (
                 <Field>
                   <b>Nykyinen seurantakiinnostuksen vaihe:</b>
