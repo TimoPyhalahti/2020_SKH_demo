@@ -88,6 +88,7 @@ const SeurantaMap: React.FC<any> = (props: {
               const z = monInterestTriggers[k];
               if (x.id === z.monInterestId) {
                 let t0: any = null;
+                let t1: any = null;
                 if (z.obsId) {
                   const serviceId = item.serviceId
                     ? item.serviceId
@@ -108,13 +109,21 @@ const SeurantaMap: React.FC<any> = (props: {
                     }
                   }
                 }
+                if (!t0) {
+                  t0 = z.date;
+                }
+
                 const itemObs: any[] = [];
+
                 if (z.monServiceId) {
                   for (let l = 0; l < obs.length; l++) {
                     const zx = obs[l];
                     if (zx.id === z.monServiceId) {
                       for (let a = 0; a < zx.items.length; a++) {
                         const zy = zx.items[a];
+                        if (zy.date < t0) {
+                          break;
+                        }
                         if (
                           haverSine(zy.lat, zy.long, item.lat, item.long) <=
                           item.radius
@@ -127,14 +136,14 @@ const SeurantaMap: React.FC<any> = (props: {
                   }
                 }
 
-                if (itemObs.length > 0 && !t0) {
-                  t0 = itemObs[itemObs.length - 1].date;
-                } else if (!t0) {
-                  t0 = z.date;
+                if (itemObs.length > 0 && !t1) {
+                  console.log(itemObs)
+                  t1 = itemObs.pop().date;
                 }
 
-                item.obs = itemObs;
+                item.itemObs = itemObs;
                 item.t0 = t0;
+                item.t1 = t1;
                 item.serviceId = z.monServiceId;
                 item.Smin = z.Smin;
                 item.Smax = z.Smax;
@@ -169,6 +178,7 @@ const SeurantaMap: React.FC<any> = (props: {
           return getObservationData(item);
         }),
       ).then(data => {
+        console.log(data);
         data.forEach(el => {
           el.items.sort((a: any, b: any) => {
             return b.date - a.date;
@@ -228,7 +238,7 @@ const LegendImg: any = styled.img.attrs({
   padding: 10px;
   height: 120px;
   border-radius: 4px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
 `;
 
 interface ObsPointItemData {

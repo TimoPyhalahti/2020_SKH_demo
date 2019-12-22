@@ -38,23 +38,58 @@ const getHours = (d1: any, d2: any): number => {
 const calculateS = (obs: any): any => {
   const now = Date.now();
   const t0 = obs.t0;
+  let t1 = obs.t1;
   let phase: number = 0;
   let S: number = 0;
   const diffDays = getDays(now, t0);
   const diffHours = getHours(now, t0);
-
-  if (diffDays < obs.Tv) {
+  
+  if (!t1) {
     phase = 1;
-    S = obs.Sv + obs.kSv * diffHours;
-  } else if (diffDays < obs.Ts) {
-    phase = 2;
-    S = obs.Ss + obs.kSs * diffHours;
-  } else if (diffDays < obs.Tr) {
-    phase = 3;
-    S = obs.Sr + obs.kSr * diffHours;
+    S = obs.Sv;
   } else {
-    phase = 4;
-    S = -2;
+    const diffHoursT1 = t1 ? getHours(now, t1) : 0;
+    const diffDaysT1 = t1 ? getDays(now, t1) : 0;
+
+    const l = obs.itemObs.length;
+    if (diffHoursT1) {
+      if (l < 1) {
+        phase = 1;
+        S = obs.Sv + obs.kSv * diffHoursT1;
+      } else if (l < 2) {
+        phase = 2;
+        S = obs.Ss + obs.kSs * diffHoursT1;
+      } else if (l < 3 && diffDaysT1 < obs.Tr) {
+        phase = 3;
+        S = obs.Sr + obs.kSr * diffHoursT1;
+      } else {
+        phase = 4;
+        S = 1;
+      }
+    }
+  }
+
+  // if (diffDaysT1) {
+  //   if (diffDaysT1 < obs.Tv) {
+  //     phase = 1;
+  //     S = obs.Sv + obs.kSv * diffHoursT1;
+  //   } else if (diffDaysT1 < obs.Ts) {
+  //     phase = 2;
+  //     S = obs.Ss + obs.kSs * diffHoursT1;
+  //   } else if (diffDaysT1 < obs.Tr) {
+  //     phase = 3;
+  //     S = obs.Sr + obs.kSr * diffHoursT1;
+  //   } else {
+  //     phase = 4;
+  //     S = 1;
+  //   }
+  // }
+  console.log(S);
+  if (obs.Td && obs.Sd && obs.kSd) {
+    if (diffDays <= obs.Td) {
+      const bonus = obs.sd + obs.kSd * diffDays;
+      S += bonus;
+    }
   }
 
   return { phase, S };
@@ -72,6 +107,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
       const calcs = calculateS(props.obs);
       const realS = Math.max(Math.min(props.obs.Smax, calcs.S), props.obs.Smin);
       settings.S = calcs.S;
+      console.log(calcs);
       settings.phase = calcs.phase;
       const index = Math.max(Math.min(Math.floor(realS / (100 / 5)), 4), 0);
       color = COLORS[index];
@@ -96,14 +132,14 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
         <circle cx="12" cy="10" r="3"></circle></svg>`,
       });
     } else {
-      size = 45;
+      size = 44;
       color = NO_COLOR;
       settings.levelOfNeed = 'ei määritetty';
       settings.icon = L.divIcon({
         className: 'pin',
         iconAnchor: [size / 2, size / 2],
-        labelAnchor: [-6, 0],
-        popupAnchor: [0, -5],
+        labelAnchor: [0, 0],
+        popupAnchor: [0, -10],
         html: `<svg xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 512 512"
           width="${size}" 
@@ -172,6 +208,14 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                       d.getMinutes()
                     );
                   })()}
+                </Field>
+              )}
+              {props.obs.itemObs && (
+                <Field>
+                  <b>
+                    Havaintoja alueella seurantakiinnostuksen alun jälkeen:{' '}
+                  </b>
+                  {' ' + props.obs.itemObs.length}
                 </Field>
               )}
               {renderSettings.S && (
