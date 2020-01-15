@@ -51,6 +51,7 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
         date: Date.parse(item.requested_datetime),
         obsId: item.attributes.string_201911180958422,
         monInterestDefId: item.attributes.string_201911180959219,
+        serviceId: item.attributes.string_201911180955377,
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
         radius: Number(item.attributes.number_201911180956460),
@@ -150,19 +151,19 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
         startPhase:
           item.attributes
             .monint_startevent_startphase_singlevaluelist_201912031300515 &&
-          Number(
+          getPhase(
             item.attributes
               .monint_startevent_startphase_singlevaluelist_201912031300515,
           ),
-        phaseSkips:
-          item.attributes
-            .monint_startevent_passphases_multivaluelist_201912031300516 &&
-          getPhaseSkips(
-            Number(
-              item.attributes
-                .monint_startevent_passphases_multivaluelist_201912031300516,
-            ),
-          ),
+        phaseSkips: item.attributes
+          .monint_startevent_passphases_multivaluelist_201912031300516
+          ? getPhaseSkips(
+              Number(
+                item.attributes
+                  .monint_startevent_passphases_multivaluelist_201912031300516,
+              ),
+            )
+          : [],
         lat: Number(item.lat.replace(/,/, '.')),
         lon: Number(item.long.replace(/,/, '.')),
         Smin:
@@ -216,7 +217,7 @@ export const getObservationData = (serviceCode: string): Promise<ObsData[]> => {
     .then(({ data }) => {
       const obs = data.map((item: any) => ({
         id: item.service_request_id,
-        serviceId: data.service_code,
+        serviceId: serviceCode,
         date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
@@ -252,4 +253,29 @@ const getPhaseSkips = (val: number): string[] => {
   });
 
   return phases;
+};
+
+const getPhase = (val: number): string => {
+  let phase = '';
+  switch (val) {
+    case 1:
+      phase = 'validation';
+      break;
+    case 2:
+      phase = 'similarity';
+      break;
+    case 3:
+      phase = 'reobservation';
+      break;
+    case 4:
+      phase = 'indefinite';
+      break;
+    case 5:
+      phase = 'ordered';
+      break;
+    default:
+      phase = 'indefinite';
+  }
+
+  return phase;
 };

@@ -24,7 +24,6 @@ import {
 } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
-import { on } from 'cluster';
 
 const position = [60.2295, 25.0205];
 
@@ -67,7 +66,6 @@ const SeurantaMap: React.FC<any> = (props: {
 
       const defs = arrayToObject(monInterestDefs, 'id');
 
-      console.log(monInterestTriggers);
       monInterests.forEach(interest => {
         const itemData: any = {};
         itemData.id = interest.id;
@@ -107,12 +105,9 @@ const SeurantaMap: React.FC<any> = (props: {
 
           const firstObs = points[interest.obsId];
 
-          if (
-            itemData.trigger &&
-            itemData.trigger.obsId &&
-            itemData.trigger.obsId
-          ) {
-          } else if (firstObs) {
+          let firstObsId = null;
+
+          if (firstObs) {
             itemData.t0 = firstObs.date;
             itemData.lat = firstObs.lat;
             itemData.long = firstObs.long;
@@ -122,177 +117,177 @@ const SeurantaMap: React.FC<any> = (props: {
             itemData.long = interest.long;
           }
 
-          let firstObsDate = firstObs.date;
-          let firstObsId = null;
-
-          if (itemData.trigger) {
-            if (itemData.trigger.obsId && points[itemData.trigger.obsId]) {
-              firstObsDate = points[itemData.trigger.obsId].date;
-              firstObsId = itemData.trigger.obsId;
-            } else {
-              firstObsDate = itemData.trigger;
-            }
+          itemData.created = itemData.t0;
+          if (
+            itemData.trigger &&
+            itemData.trigger.obsId &&
+            points[itemData.trigger.obsId]
+          ) {
+            itemData.t0 = points[itemData.trigger.obsId].date;
           }
 
-          const relevantObs: ObsData[] = [];
+          const now = Date.now();
+          const obDates: any[] = [now];
 
-          if (itemData.trigger && itemData.trigger.serviceId) {
-            const serviceId = itemData.trigger.serviceId;
+          itemData.serviceId =
+            itemData.trigger && itemData.trigger.serviceId
+              ? itemData.trigger.serviceId
+              : interest.serviceId;
+
+          if (itemData.serviceId !== undefined && itemData.serviceId) {
             for (let i = 0; i < obs.length; i++) {
               const ob = obs[i];
-              if (
-                ob.id === serviceId &&
-                firstObsDate < ob.date &&
-                ob.id != firstObsId &&
-                haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
-                  itemData.radius
-              ) {
-                relevantObs.unshift(ob);
+              if (itemData.t0 < ob.date) {
+                if (
+                  ob.serviceId === itemData.serviceId &&
+                  ob.id !== firstObsId &&
+                  haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
+                    itemData.radius
+                ) {
+                  obDates.unshift(ob.date);
+                }
               } else {
                 break;
               }
             }
           }
 
-          let lastDate = firstObsDate ? firstObsDate : itemData.t0;
-          let timeFromPhaseStart = 0;
-          let lastPhase = 'indefinite';
+          itemData.count = obDates.length - 1;
+
+          let lastDate = itemData.t0;
+          let phase = '';
+          let hoursElapsed = 0;
+
           if (itemData.trigger && itemData.trigger.startPhase) {
-            lastPhase = itemData.trigger.startPhase;
+            switch (itemData.trigger.startPhase) {
+              case 'similarity':
+                hoursElapsed = itemData.Tv * 24;
+                break;
+              case 'reobservation':
+                hoursElapsed = (itemData.Tv + itemData.Ts) * 24;
+                break;
+              case 'indefinite':
+                hoursElapsed = (itemData.Tv + itemData.Ts + itemData.Tr) * 24;
+                break;
+              default:
+                hoursElapsed = 0;
+            }
           }
 
-          let s = 0;
-          if (itemData.sinf) {
-            s = itemData.sinf
-          }
-          
-          relevantObs.forEach(ob => {
-            if (itemData.trigger && ob.date >= firstObsDate) {
-              const hours = hoursBetweenTimestamps(ob.date, lastDate);
-              if ()
+          obDates.forEach(date => {
+            if (date >= itemData.t0) {
+              const hours = hoursBetweenTimestamps(date, lastDate);
+              let totalHours = hours + hoursElapsed;
+
+              if (totalHours < itemData.Tv * 24) {
+                if (
+                  (itemData.trigger &&
+                    itemData.trigger.phaseSkips.includes('validation')) ||
+                  date === now
+                ) {
+                  hoursElapsed = totalHours;
+                  phase = 'validation';
+                } else {
+                  hoursElapsed = 0;
+                  phase = 'validation';
+                }
+              } else if (totalHours < (itemData.Tv + itemData.Ts) * 24) {
+                if (
+                  (itemData.trigger &&
+                    itemData.trigger.phaseSkips.includes('similarity')) ||
+                  date === now
+                ) {
+                  hoursElapsed = totalHours;
+                  phase = 'similarity';
+                } else {
+                  hoursElapsed = 0;
+                  phase = 'validation';
+                }
+              } else if (
+                totalHours <
+                (itemData.Tv + itemData.Ts + itemData.Tr) * 24
+              ) {
+                if (
+                  (itemData.trigger &&
+                    itemData.trigger.phaseSkips.includes('reobservation')) ||
+                  date === now
+                ) {
+                  hoursElapsed = totalHours;
+                  phase = 'reobservation';
+                } else {
+                  hoursElapsed = 0;
+                  phase = 'validation';
+                }
+              } else {
+                if (
+                  (itemData.trigger &&
+                    itemData.trigger.phaseSkips.includes('indefinite')) ||
+                  date === now
+                ) {
+                  hoursElapsed = totalHours;
+                  phase = 'indefinite';
+                } else {
+                  hoursElapsed = 0;
+                  phase = 'validation';
+                }
+              }
+              lastDate = date;
             }
           });
 
+          let s = 0;
+
+          if (phase === 'validation') {
+            const hours = hoursElapsed;
+            const inc = itemData.kSv ? (itemData.kSv * hours) / 24 : 0;
+            s = itemData.Sv + inc;
+          } else if (phase === 'similarity') {
+            const hours = hoursElapsed - itemData.Tv;
+            const inc = itemData.kSs ? (itemData.kSs * hours) / 24 : 0;
+            s = itemData.Ss + inc;
+          } else if (phase === 'reobservation') {
+            const hours =
+              hoursElapsed - (itemData.Tv + itemData.Ts + itemData.Tr);
+            const inc = itemData.kSr ? (itemData.kSr * hours) / 24 : 0;
+            s = itemData.Sr + inc;
+          } else if (itemData.Sinf) {
+            s = itemData.Sinf;
+          }
+
+          if (itemData.trigger && itemData.trigger.Sd) {
+            const hours = hoursBetweenTimestamps(lastDate, itemData.t0);
+            if (!itemData.trigger.Td || hours < itemData.trigger.Td * 24) {
+              const inc = itemData.trigger.kSd
+                ? (itemData.trigger.kSd * hours) / 24
+                : 0;
+              s += itemData.trigger.Sd + inc;
+            }
+          }
+
+          itemData.s = s;
+          itemData.phase = phase;
           items.push(itemData);
         }
       });
-      console.log(items);
 
       setLoading(false);
       setObsPointItems(items);
-      // const items = obsPoints.map(item => {
-      //   for (let i = 0; i < monInterests.length; i++) {
-      //     const x = monInterests[i];
-      //     if (x.obsPointId === item.id) {
-      //       item.radius = x.radius;
-
-      //       for (let j = 0; j < monInterestDefs.length; j++) {
-      //         const y = monInterestDefs[j];
-      //         if (y.id === x.monInterestDefId) {
-      //           item.Tv = y.Tv;
-      //           item.Ts = y.Ts;
-      //           item.Tr = y.Tr;
-      //           item.Sv = y.Sv;
-      //           item.Ss = y.Ss;
-      //           item.Sr = y.Sr;
-      //           item.kSv = y.kSv;
-      //           item.kSs = y.kSs;
-      //           item.kSr = y.kSr;
-      //           item.Sinf = y.Sinf;
-      //           item.dSv = y.dSv;
-      //           item.Spmin = y.Spmin;
-      //           item.Spmax = y.Spmax;
-      //           item.Somin = y.Somin;
-      //           break;
-      //         }
-      //       }
-
-      //       for (let k = 0; k < monInterestTriggers.length; k++) {
-      //         const z = monInterestTriggers[k];
-      //         if (x.id === z.monInterestId) {
-      //           let t0: any = null;
-      //           let t1: any = null;
-      //           if (z.obsId) {
-      //             const serviceId = item.serviceId
-      //               ? item.serviceId
-      //               : z.monServiceId;
-      //             if (serviceId) {
-      //               for (let l = 0; l < obs.length; l++) {
-      //                 const zx = obs[l];
-      //                 if (zx.id === serviceId) {
-      //                   for (let a = 0; a < zx.items.length; a++) {
-      //                     const zy = zx.items[a];
-      //                     if (zy.id === z.obsId) {
-      //                       t0 = zy.date;
-      //                       break;
-      //                     }
-      //                   }
-      //                   break;
-      //                 }
-      //               }
-      //             }
-      //           }
-      //           if (!t0) {
-      //             t0 = z.date;
-      //           }
-
-      //           const itemObs: any[] = [];
-
-      //           if (z.monServiceId) {
-      //             for (let l = 0; l < obs.length; l++) {
-      //               const zx = obs[l];
-      //               if (zx.id === z.monServiceId) {
-      //                 for (let a = 0; a < zx.items.length; a++) {
-      //                   const zy = zx.items[a];
-      //                   if (zy.date < t0) {
-      //                     break;
-      //                   }
-      //                   if (
-      //                     haverSine(zy.lat, zy.long, item.lat, item.long) <=
-      //                     item.radius
-      //                   ) {
-      //                     itemObs.push(zy);
-      //                   }
-      //                 }
-      //                 break;
-      //               }
-      //             }
-      //           }
-
-      //           if (itemObs.length > 0 && !t1) {
-      //             console.log(itemObs)
-      //             t1 = itemObs.pop().date;
-      //           }
-
-      //           item.itemObs = itemObs;
-      //           item.t0 = t0;
-      //           item.t1 = t1;
-      //           item.serviceId = z.monServiceId;
-      //           item.Smin = z.Smin;
-      //           item.Smax = z.Smax;
-      //           item.Td = z.Td;
-      //           item.Sd = z.Sd;
-      //           item.kSd = z.kSd;
-      //           break;
-      //         }
-      //       }
-      //       break;
-      //     }
-      //   }
-      //   return item;
-      // });
-      // setLoading(false);
-      // setObsPointItems(items);
     }
   }, [obsPoints, obs, monInterestDefs, monInterests, monInterestTriggers]);
 
   useEffect(() => {
-    if (monInterestTriggers) {
+    if (monInterestTriggers && monInterests) {
       let items: ObsData[] = [];
       const services: string[] = [];
       monInterestTriggers.forEach(trig => {
-        const serv = trig.monServiceId;
-        if (!services.includes(serv)) {
+        const serv = trig.serviceId;
+        if (!services.includes(serv) && serv !== undefined) {
+          services.push(serv);
+        }
+      });
+      monInterests.forEach(interest => {
+        const serv = interest.serviceId;
+        if (!services.includes(serv) && serv !== undefined) {
           services.push(serv);
         }
       });
@@ -310,7 +305,7 @@ const SeurantaMap: React.FC<any> = (props: {
         setObs(items);
       });
     }
-  }, [monInterestTriggers]);
+  }, [monInterestTriggers, monInterests]);
 
   return (
     <div style={{ display: props.hidden ? 'none' : 'flex', flex: 1 }}>
@@ -325,7 +320,7 @@ const SeurantaMap: React.FC<any> = (props: {
           {obsPointItems.map(item => (
             <ObservationPoint
               key={item.id}
-              obs={item}
+              ob={item}
               openModal={props.openModal}
             />
           ))}

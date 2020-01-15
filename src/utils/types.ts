@@ -32,6 +32,7 @@ export interface MonInterestData {
   date: number;
   obsId: string;
   monInterestDefId: string;
+  serviceId: string;
   lat: number;
   long: number;
   radius: number;

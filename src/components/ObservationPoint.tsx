@@ -4,12 +4,9 @@ import L from 'leaflet';
 import { Marker, Popup, Circle } from 'react-leaflet';
 
 import { Theme } from '../styles';
-import { ObsPointData } from '../utils/types';
-import { COPYFILE_FICLONE_FORCE } from 'constants';
-import { render } from 'react-dom';
 
 interface Props {
-  obs: any;
+  ob: any;
   openModal: any;
 }
 
@@ -23,92 +20,21 @@ const LEVEL_OF_NEED = [
   'suuri',
 ];
 
-const getDays = (d1: any, d2: any): number => {
-  const diff = d1 - d2;
-  const days = Math.floor(diff / 1000 / 60 / 60 / 24);
-  return days;
-};
-
-const getHours = (d1: any, d2: any): number => {
-  const diff = d1 - d2;
-  const hours = Math.floor(diff / 1000 / 60 / 60);
-  return hours;
-};
-
-const calculateS = (obs: any): any => {
-  const now = Date.now();
-  const t0 = obs.t0;
-  let t1 = obs.t1;
-  let phase: number = 0;
-  let S: number = 0;
-  const diffDays = getDays(now, t0);
-  const diffHours = getHours(now, t0);
-  
-  if (!t1) {
-    phase = 1;
-    S = obs.Sv;
-  } else {
-    const diffHoursT1 = t1 ? getHours(now, t1) : 0;
-    const diffDaysT1 = t1 ? getDays(now, t1) : 0;
-
-    const l = obs.itemObs.length;
-    if (diffHoursT1) {
-      if (l < 1) {
-        phase = 1;
-        S = obs.Sv + obs.kSv * diffHoursT1;
-      } else if (l < 2) {
-        phase = 2;
-        S = obs.Ss + obs.kSs * diffHoursT1;
-      } else if (l < 3 && diffDaysT1 < obs.Tr) {
-        phase = 3;
-        S = obs.Sr + obs.kSr * diffHoursT1;
-      } else {
-        phase = 4;
-        S = 1;
-      }
-    }
-  }
-
-  // if (diffDaysT1) {
-  //   if (diffDaysT1 < obs.Tv) {
-  //     phase = 1;
-  //     S = obs.Sv + obs.kSv * diffHoursT1;
-  //   } else if (diffDaysT1 < obs.Ts) {
-  //     phase = 2;
-  //     S = obs.Ss + obs.kSs * diffHoursT1;
-  //   } else if (diffDaysT1 < obs.Tr) {
-  //     phase = 3;
-  //     S = obs.Sr + obs.kSr * diffHoursT1;
-  //   } else {
-  //     phase = 4;
-  //     S = 1;
-  //   }
-  // }
-  console.log(S);
-  if (obs.Td && obs.Sd && obs.kSd) {
-    if (diffDays <= obs.Td) {
-      const bonus = obs.sd + obs.kSd * diffDays;
-      S += bonus;
-    }
-  }
-
-  return { phase, S };
-};
-
 const ObservationPoint: React.FC<Props> = (props: Props) => {
   const [renderSettings, setRenderSettings] = useState<any>(null);
-  const position: number[] = [props.obs.lat, props.obs.long];
+  const position: number[] = [props.ob.lat, props.ob.long];
 
   useEffect(() => {
     let color: string;
     let size: number;
     const settings: any = {};
-    if (props.obs.radius !== undefined) {
-      const calcs = calculateS(props.obs);
-      const realS = Math.max(Math.min(props.obs.Smax, calcs.S), props.obs.Smin);
-      settings.S = calcs.S;
-      console.log(calcs);
-      settings.phase = calcs.phase;
+    if (props.ob.radius !== undefined) {
+      const realS = Math.max(
+        Math.min(props.ob.Smax ? props.ob.Smax : 0, props.ob.s),
+        props.ob.Smin ? props.ob.Smin : 0,
+      );
+      settings.s = realS;
+      settings.phase = props.ob.phase;
       const index = Math.max(Math.min(Math.floor(realS / (100 / 5)), 4), 0);
       color = COLORS[index];
       size = 50 + index * 4;
@@ -160,10 +86,10 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     <>
       {renderSettings && (
         <>
-          {props.obs.radius && (
+          {props.ob.radius && renderSettings.s >= 10 && (
             <Circle
               center={position}
-              radius={props.obs.radius}
+              radius={props.ob.radius}
               color={'black'}
               fillColor={renderSettings.color}
               weight={1}
@@ -175,28 +101,28 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
           <Point position={position} icon={renderSettings.icon}>
             <Tooltip>
               <Header>
-                {props.obs.serviceName} <br />
+                Havaintopaikka <br />
               </Header>
               <hr />
               {renderSettings.levelOfNeed && (
                 <Field>
                   <b>Havainnon tarve:</b>
-                  {' ' + renderSettings.levelOfNeed}
+                  {'  ' + renderSettings.levelOfNeed}
                 </Field>
               )}
-              {props.obs.serviceId && (
+              {props.ob.serviceId && (
                 <Field>
                   <b>Ilmoituspalvelu:</b>
-                  {' ' + props.obs.serviceId}
+                  {'  ' + props.ob.serviceId}
                 </Field>
               )}
-              {props.obs.t0 && (
+              {props.ob.created && (
                 <Field>
                   <b>Seurantakiinnostuksen alku:</b>
                   {(() => {
-                    const d = new Date(props.obs.t0);
+                    const d = new Date(props.ob.created);
                     return (
-                      ' ' +
+                      '  ' +
                       d.getDate() +
                       '/' +
                       d.getMonth() +
@@ -210,35 +136,61 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                   })()}
                 </Field>
               )}
-              {props.obs.itemObs && (
+              {props.ob.t0 && props.ob.created && (
                 <Field>
-                  <b>
-                    Havaintoja alueella seurantakiinnostuksen alun jälkeen:{' '}
-                  </b>
-                  {' ' + props.obs.itemObs.length}
+                  <b>Viimeisin kiinnostuksen herätys:</b>
+                  {(() => {
+                    if (props.ob.trigger) {
+                      const d = new Date(props.ob.t0);
+                      return (
+                        '  ' +
+                        d.getDate() +
+                        '/' +
+                        d.getMonth() +
+                        '/' +
+                        d.getFullYear() +
+                        ' ' +
+                        d.getHours() +
+                        ':' +
+                        d.getMinutes()
+                      );
+                    } else {
+                      return '  ---';
+                    }
+                  })()}
                 </Field>
               )}
-              {renderSettings.S && (
+              {props.ob.count !== null && (
+                <Field>
+                  <b>Havaintoja alueella seurantakiinnostuksen alun jälkeen:</b>
+                  {'  ' + props.ob.count}
+                </Field>
+              )}
+              {renderSettings.s !== null && (
                 <Field>
                   <b>Seurantakiinnostus (S):</b>
-                  {' ' + renderSettings.S}
+                  {'  ' + renderSettings.s}
                 </Field>
               )}
-              {props.obs.itemObs && (
-                <Field>
-                  <b>
-                    Havaintoja alueella seurantakiinnostuksen alun jälkeen:{' '}
-                  </b>
-                  {' ' + props.obs.itemObs.length}
-                </Field>
-              )}
-              {renderSettings.phase > 0 && (
+              {props.ob.phase && (
                 <Field>
                   <b>Nykyinen seurantakiinnostuksen vaihe:</b>
-                  {' ' + renderSettings.phase}
+                  {'  ' +
+                    (() => {
+                      switch (renderSettings.phase) {
+                        case 'validation':
+                          return 'validointi';
+                        case 'similarity':
+                          return 'samankaltaisuusvaihe';
+                        case 'reobservation':
+                          return 'uudelleenhavaitseminen';
+                        default:
+                          return 'perusvaihe';
+                      }
+                    })()}
                 </Field>
               )}
-              {props.obs.serviceId && (
+              {props.ob.serviceId && (
                 <Button onClick={props.openModal}>Lisää havainto</Button>
               )}
             </Tooltip>
