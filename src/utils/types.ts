@@ -1,6 +1,6 @@
 export interface ObsPointData {
   id: string;
-  date: Date;
+  date: number;
   lat: number;
   long: number;
   serviceName: string;
@@ -29,8 +29,8 @@ export interface ObsPointData {
 
 export interface MonInterestData {
   id: string;
-  date: Date;
-  obsPointId: string;
+  date: number;
+  obsId: string;
   monInterestDefId: string;
   lat: number;
   long: number;
@@ -39,7 +39,7 @@ export interface MonInterestData {
 
 export interface MonInterestDefData {
   id: string;
-  date: Date;
+  date: number;
   lat: number;
   long: number;
   Tv: number;
@@ -60,14 +60,14 @@ export interface MonInterestDefData {
 
 export interface MonInterestTriggerData {
   id: string;
-  date: Date;
+  date: number;
   monInterestId: string;
   obsId: string;
-  monServiceId: string;
+  serviceId: string;
   lat: number;
   long: number;
   startPhase: number;
-  passPhase: number;
+  phaseSkips: number;
   Smin: number;
   Smax: number;
   Td: number;
@@ -77,7 +77,8 @@ export interface MonInterestTriggerData {
 
 export interface ObsData {
   id: string;
-  date: Date;
+  serviceId: string;
+  date: number;
   lat: number;
   long: number;
 }

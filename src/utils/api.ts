@@ -49,7 +49,7 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
       const items: MonInterestData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
-        obsPointId: item.attributes.string_201911180958422,
+        obsId: item.attributes.string_201911180958422,
         monInterestDefId: item.attributes.string_201911180959219,
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
@@ -137,8 +137,6 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
       },
     })
     .then(({ data }) => {
-      console.log('asdf')
-      console.log(data)
       const items: MonInterestTriggerData[] = data.map((item: any) => ({
         id: item.service_request_id,
         date: Date.parse(item.requested_datetime),
@@ -147,25 +145,57 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
             .monint_startevent_siteofinterest_string_201912031300511,
         obsId:
           item.attributes.monint_startevent_initeventid_string_201912031300512,
-        monServiceId:
+        serviceId:
           item.attributes.monint_startevent_initiatingsc_string_201912031300514,
+        startPhase:
+          item.attributes
+            .monint_startevent_startphase_singlevaluelist_201912031300515 &&
+          Number(
+            item.attributes
+              .monint_startevent_startphase_singlevaluelist_201912031300515,
+          ),
+        phaseSkips:
+          item.attributes
+            .monint_startevent_passphases_multivaluelist_201912031300516 &&
+          getPhaseSkips(
+            Number(
+              item.attributes
+                .monint_startevent_passphases_multivaluelist_201912031300516,
+            ),
+          ),
         lat: Number(item.lat.replace(/,/, '.')),
         lon: Number(item.long.replace(/,/, '.')),
-        Smin: Number(
-          item.attributes.monint_Smin_number_201912031319308.replace(/,/, '.'),
-        ),
-        Smax: Number(
-          item.attributes.monint_Smax_number_201912031321158.replace(/,/, '.'),
-        ),
-        Td: Number(
-          item.attributes.monint_Td_number_201912031300517.replace(/,/, '.'),
-        ),
-        Sd: Number(
-          item.attributes.monint_Sd_number_201912031300519.replace(/,/, '.'),
-        ),
-        kSd: Number(
-          item.attributes.monint_kSd_number_201912031300520.replace(/,/, '.'),
-        ),
+        Smin:
+          item.attributes.monint_Smin_number_201912031319308 &&
+          Number(
+            item.attributes.monint_Smin_number_201912031319308.replace(
+              /,/,
+              '.',
+            ),
+          ),
+        Smax:
+          item.attributes.monint_Smax_number_201912031321158 &&
+          Number(
+            item.attributes.monint_Smax_number_201912031321158.replace(
+              /,/,
+              '.',
+            ),
+          ),
+        Td:
+          item.attributes.monint_Td_number_201912031300517 &&
+          Number(
+            item.attributes.monint_Td_number_201912031300517.replace(/,/, '.'),
+          ),
+        Sd:
+          item.attributes.monint_Sd_number_201912031300519 &&
+          Number(
+            item.attributes.monint_Sd_number_201912031300519.replace(/,/, '.'),
+          ),
+        kSd:
+          item.attributes.monint_kSd_number_201912031300520 &&
+          Number(
+            item.attributes.monint_kSd_number_201912031300520.replace(/,/, '.'),
+          ),
       }));
       return items;
     })
@@ -175,8 +205,7 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
     });
 };
 
-export const getObservationData = (serviceCode: string): Promise<ObsRes> => {
-  const obsRes: any = { id: serviceCode };
+export const getObservationData = (serviceCode: string): Promise<ObsData[]> => {
   return axios
     .get(ENTRYPOINT, {
       params: {
@@ -185,17 +214,42 @@ export const getObservationData = (serviceCode: string): Promise<ObsRes> => {
       },
     })
     .then(({ data }) => {
-      obsRes.items = data.map((item: any) => ({
+      const obs = data.map((item: any) => ({
         id: item.service_request_id,
+        serviceId: data.service_code,
         date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
       }));
-      return obsRes;
+      return obs;
     })
     .catch(error => {
       console.log(error);
-      obsRes.items = [];
-      return obsRes;
+      return [];
     });
+};
+
+const phaseValues = {
+  ordered: 32768,
+  indefinite: 128,
+  reobservation: 8,
+  similarity: 2,
+  validation: 1,
+};
+
+const getPhaseSkips = (val: number): string[] => {
+  const phases: string[] = [];
+
+  Object.keys(phaseValues).forEach(key => {
+    if (val >= phaseValues[key]) {
+      phases.unshift(key);
+      val -= phaseValues[key];
+
+      if (val === 0) {
+        return;
+      }
+    }
+  });
+
+  return phases;
 };

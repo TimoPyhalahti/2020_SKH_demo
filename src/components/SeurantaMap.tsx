@@ -17,10 +17,14 @@ import {
   MonInterestTriggerData,
   ObsData,
 } from '../utils/types';
-import { haverSine } from '../utils/helpers';
+import {
+  haverSine,
+  arrayToObject,
+  hoursBetweenTimestamps,
+} from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
-import { prependOnceListener } from 'cluster';
+import { on } from 'cluster';
 
 const position = [60.2295, 25.0205];
 
@@ -57,118 +61,237 @@ const SeurantaMap: React.FC<any> = (props: {
       monInterests &&
       monInterestTriggers
     ) {
-      const items = obsPoints.map(item => {
-        for (let i = 0; i < monInterests.length; i++) {
-          const x = monInterests[i];
-          if (x.obsPointId === item.id) {
-            item.radius = x.radius;
+      const items: any = [];
 
-            for (let j = 0; j < monInterestDefs.length; j++) {
-              const y = monInterestDefs[j];
-              if (y.id === x.monInterestDefId) {
-                item.Tv = y.Tv;
-                item.Ts = y.Ts;
-                item.Tr = y.Tr;
-                item.Sv = y.Sv;
-                item.Ss = y.Ss;
-                item.Sr = y.Sr;
-                item.kSv = y.kSv;
-                item.kSs = y.kSs;
-                item.kSr = y.kSr;
-                item.Sinf = y.Sinf;
-                item.dSv = y.dSv;
-                item.Spmin = y.Spmin;
-                item.Spmax = y.Spmax;
-                item.Somin = y.Somin;
-                break;
+      const points = arrayToObject(obsPoints.concat(obs), 'id');
+
+      const defs = arrayToObject(monInterestDefs, 'id');
+
+      console.log(monInterestTriggers);
+      monInterests.forEach(interest => {
+        const itemData: any = {};
+        itemData.id = interest.id;
+        itemData.radius = interest.radius;
+
+        const def = defs[interest.monInterestDefId];
+
+        if (def) {
+          itemData.Tv = def.Tv;
+          itemData.Ts = def.Ts;
+          itemData.Tr = def.Tr;
+          itemData.Sv = def.Sv;
+          itemData.Ss = def.Ss;
+          itemData.Sr = def.Sr;
+          itemData.kSv = def.kSv;
+          itemData.kSs = def.kSs;
+          itemData.kSr = def.kSr;
+          itemData.Sinf = def.Sinf;
+          itemData.dSv = def.dSv;
+          itemData.Spmin = def.Spmin;
+          itemData.Spmax = def.Spmax;
+          itemData.Somin = def.Somin;
+
+          itemData.trigger = null;
+
+          monInterestTriggers.forEach(trig => {
+            if (trig.monInterestId === interest.id) {
+              if (itemData.trigger && trig.date < itemData.trigger) {
+                return;
               }
-            }
-
-            for (let k = 0; k < monInterestTriggers.length; k++) {
-              const z = monInterestTriggers[k];
-              if (x.id === z.monInterestId) {
-                let t0: any = null;
-                let t1: any = null;
-                if (z.obsId) {
-                  const serviceId = item.serviceId
-                    ? item.serviceId
-                    : z.monServiceId;
-                  if (serviceId) {
-                    for (let l = 0; l < obs.length; l++) {
-                      const zx = obs[l];
-                      if (zx.id === serviceId) {
-                        for (let a = 0; a < zx.items.length; a++) {
-                          const zy = zx.items[a];
-                          if (zy.id === z.obsId) {
-                            t0 = zy.date;
-                            break;
-                          }
-                        }
-                        break;
-                      }
-                    }
-                  }
-                }
-                if (!t0) {
-                  t0 = z.date;
-                }
-
-                const itemObs: any[] = [];
-
-                if (z.monServiceId) {
-                  for (let l = 0; l < obs.length; l++) {
-                    const zx = obs[l];
-                    if (zx.id === z.monServiceId) {
-                      for (let a = 0; a < zx.items.length; a++) {
-                        const zy = zx.items[a];
-                        if (zy.date < t0) {
-                          break;
-                        }
-                        if (
-                          haverSine(zy.lat, zy.long, item.lat, item.long) <=
-                          item.radius
-                        ) {
-                          itemObs.push(zy);
-                        }
-                      }
-                      break;
-                    }
-                  }
-                }
-
-                if (itemObs.length > 0 && !t1) {
-                  console.log(itemObs)
-                  t1 = itemObs.pop().date;
-                }
-
-                item.itemObs = itemObs;
-                item.t0 = t0;
-                item.t1 = t1;
-                item.serviceId = z.monServiceId;
-                item.Smin = z.Smin;
-                item.Smax = z.Smax;
-                item.Td = z.Td;
-                item.Sd = z.Sd;
-                item.kSd = z.kSd;
-                break;
+              if (trig.obsId && points[trig.obsId]) {
+                trig.date == points[trig.obsId].date;
               }
+              itemData.trigger = trig;
             }
-            break;
+          });
+
+          const firstObs = points[interest.obsId];
+
+          if (
+            itemData.trigger &&
+            itemData.trigger.obsId &&
+            itemData.trigger.obsId
+          ) {
+          } else if (firstObs) {
+            itemData.t0 = firstObs.date;
+            itemData.lat = firstObs.lat;
+            itemData.long = firstObs.long;
+          } else {
+            itemData.t0 = interest.date;
+            itemData.lat = interest.lat;
+            itemData.long = interest.long;
           }
+
+          let firstObsDate = firstObs.date;
+          let firstObsId = null;
+
+          if (itemData.trigger) {
+            if (itemData.trigger.obsId && points[itemData.trigger.obsId]) {
+              firstObsDate = points[itemData.trigger.obsId].date;
+              firstObsId = itemData.trigger.obsId;
+            } else {
+              firstObsDate = itemData.trigger;
+            }
+          }
+
+          const relevantObs: ObsData[] = [];
+
+          if (itemData.trigger && itemData.trigger.serviceId) {
+            const serviceId = itemData.trigger.serviceId;
+            for (let i = 0; i < obs.length; i++) {
+              const ob = obs[i];
+              if (
+                ob.id === serviceId &&
+                firstObsDate < ob.date &&
+                ob.id != firstObsId &&
+                haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
+                  itemData.radius
+              ) {
+                relevantObs.unshift(ob);
+              } else {
+                break;
+              }
+            }
+          }
+
+          let lastDate = firstObsDate ? firstObsDate : itemData.t0;
+          let timeFromPhaseStart = 0;
+          let lastPhase = 'indefinite';
+          if (itemData.trigger && itemData.trigger.startPhase) {
+            lastPhase = itemData.trigger.startPhase;
+          }
+
+          let s = 0;
+          if (itemData.sinf) {
+            s = itemData.sinf
+          }
+          
+          relevantObs.forEach(ob => {
+            if (itemData.trigger && ob.date >= firstObsDate) {
+              const hours = hoursBetweenTimestamps(ob.date, lastDate);
+              if ()
+            }
+          });
+
+          items.push(itemData);
         }
-        return item;
       });
+      console.log(items);
+
       setLoading(false);
       setObsPointItems(items);
+      // const items = obsPoints.map(item => {
+      //   for (let i = 0; i < monInterests.length; i++) {
+      //     const x = monInterests[i];
+      //     if (x.obsPointId === item.id) {
+      //       item.radius = x.radius;
+
+      //       for (let j = 0; j < monInterestDefs.length; j++) {
+      //         const y = monInterestDefs[j];
+      //         if (y.id === x.monInterestDefId) {
+      //           item.Tv = y.Tv;
+      //           item.Ts = y.Ts;
+      //           item.Tr = y.Tr;
+      //           item.Sv = y.Sv;
+      //           item.Ss = y.Ss;
+      //           item.Sr = y.Sr;
+      //           item.kSv = y.kSv;
+      //           item.kSs = y.kSs;
+      //           item.kSr = y.kSr;
+      //           item.Sinf = y.Sinf;
+      //           item.dSv = y.dSv;
+      //           item.Spmin = y.Spmin;
+      //           item.Spmax = y.Spmax;
+      //           item.Somin = y.Somin;
+      //           break;
+      //         }
+      //       }
+
+      //       for (let k = 0; k < monInterestTriggers.length; k++) {
+      //         const z = monInterestTriggers[k];
+      //         if (x.id === z.monInterestId) {
+      //           let t0: any = null;
+      //           let t1: any = null;
+      //           if (z.obsId) {
+      //             const serviceId = item.serviceId
+      //               ? item.serviceId
+      //               : z.monServiceId;
+      //             if (serviceId) {
+      //               for (let l = 0; l < obs.length; l++) {
+      //                 const zx = obs[l];
+      //                 if (zx.id === serviceId) {
+      //                   for (let a = 0; a < zx.items.length; a++) {
+      //                     const zy = zx.items[a];
+      //                     if (zy.id === z.obsId) {
+      //                       t0 = zy.date;
+      //                       break;
+      //                     }
+      //                   }
+      //                   break;
+      //                 }
+      //               }
+      //             }
+      //           }
+      //           if (!t0) {
+      //             t0 = z.date;
+      //           }
+
+      //           const itemObs: any[] = [];
+
+      //           if (z.monServiceId) {
+      //             for (let l = 0; l < obs.length; l++) {
+      //               const zx = obs[l];
+      //               if (zx.id === z.monServiceId) {
+      //                 for (let a = 0; a < zx.items.length; a++) {
+      //                   const zy = zx.items[a];
+      //                   if (zy.date < t0) {
+      //                     break;
+      //                   }
+      //                   if (
+      //                     haverSine(zy.lat, zy.long, item.lat, item.long) <=
+      //                     item.radius
+      //                   ) {
+      //                     itemObs.push(zy);
+      //                   }
+      //                 }
+      //                 break;
+      //               }
+      //             }
+      //           }
+
+      //           if (itemObs.length > 0 && !t1) {
+      //             console.log(itemObs)
+      //             t1 = itemObs.pop().date;
+      //           }
+
+      //           item.itemObs = itemObs;
+      //           item.t0 = t0;
+      //           item.t1 = t1;
+      //           item.serviceId = z.monServiceId;
+      //           item.Smin = z.Smin;
+      //           item.Smax = z.Smax;
+      //           item.Td = z.Td;
+      //           item.Sd = z.Sd;
+      //           item.kSd = z.kSd;
+      //           break;
+      //         }
+      //       }
+      //       break;
+      //     }
+      //   }
+      //   return item;
+      // });
+      // setLoading(false);
+      // setObsPointItems(items);
     }
   }, [obsPoints, obs, monInterestDefs, monInterests, monInterestTriggers]);
 
   useEffect(() => {
     if (monInterestTriggers) {
-      const items = [];
+      let items: ObsData[] = [];
       const services: string[] = [];
-      monInterestTriggers.forEach(trigger => {
-        const serv = trigger.monServiceId;
+      monInterestTriggers.forEach(trig => {
+        const serv = trig.monServiceId;
         if (!services.includes(serv)) {
           services.push(serv);
         }
@@ -178,13 +301,13 @@ const SeurantaMap: React.FC<any> = (props: {
           return getObservationData(item);
         }),
       ).then(data => {
-        console.log(data);
         data.forEach(el => {
-          el.items.sort((a: any, b: any) => {
-            return b.date - a.date;
-          });
+          items = items.concat(el);
         });
-        setObs(data);
+        items.sort((a: any, b: any) => {
+          return b.date - a.date;
+        });
+        setObs(items);
       });
     }
   }, [monInterestTriggers]);
