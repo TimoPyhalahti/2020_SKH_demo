@@ -19,38 +19,39 @@ module.exports = {
       Components: path.resolve(__dirname, 'src/components/'),
       Assets: path.resolve(__dirname, 'src/assets/'),
       Styles: path.resolve(__dirname, 'src/styles/'),
-    }
+    },
   },
 
   module: {
-    rules: [{
-      test: /\.(ts|js)x?$/,
-      loader: 'babel-loader',
-      exclude: /node_modules/
-    },
-    {
-      test: /\.css$/,
-      use: ['style-loader', 'css-loader']
-    },
-    {
-      test: /\.(jpe?g|gif|png|svg|ttf|woff2?)$/i,
-      use: [
-        {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
+    rules: [
+      {
+        test: /\.(ts|js)x?$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(jpe?g|gif|png|svg|ttf|woff2?)$/i,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10000,
+            },
           },
-        }
-      ]
-    }
+        ],
+      },
     ],
   },
 
   plugins: [
     new HtmlWebpackPlugin({
       inject: true,
-      template: path.join(APP_PATH, 'index.html')
+      template: path.join(APP_PATH, 'index.html'),
     }),
     new ForkTsCheckerWebpackPlugin(),
-  ]
+  ],
 };

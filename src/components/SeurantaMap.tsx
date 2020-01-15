@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 
@@ -38,8 +38,14 @@ const SeurantaMap: React.FC<any> = (props: {
   const [monInterestTriggers, setMonInterestTriggers] = useState<any>(null);
   const [obs, setObs] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [lakes, setLakes] = useState<any>(null);
 
   useEffect(() => {
+    lazy(() => {
+      const data = import('../assets/jarvet.json');
+      setLakes(data);
+      return data;
+    });
     getObservationPoints().then(setObsPoints);
     getMonitoringInterestDefs().then(setMonInterestDefs);
     getMonitoringInterests().then(setMonInterests);
@@ -51,6 +57,12 @@ const SeurantaMap: React.FC<any> = (props: {
       );
     });
   }, []);
+
+  useEffect(() => {
+    if (lakes) {
+      console.log(lakes)
+    }
+  }, [lakes])
 
   useEffect(() => {
     if (
@@ -276,6 +288,7 @@ const SeurantaMap: React.FC<any> = (props: {
   }, [obsPoints, obs, monInterestDefs, monInterests, monInterestTriggers]);
 
   useEffect(() => {
+    console.log('fetching obs')
     if (monInterestTriggers && monInterests) {
       let items: ObsData[] = [];
       const services: string[] = [];
@@ -324,6 +337,7 @@ const SeurantaMap: React.FC<any> = (props: {
               openModal={props.openModal}
             />
           ))}
+          {/* <GeoJSON key={keyFunction(this.props.map.data.json)} data={this.props.map.data.json} /> */}
           <LegendContainer>
             <LegendImg />
           </LegendContainer>
