@@ -21,11 +21,11 @@ import {
   haverSine,
   arrayToObject,
   hoursBetweenTimestamps,
-  isInside
+  isInside,
 } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
-import lakes from '../assets/jarvet.json';
+// import lakes from '../assets/jarvet.json';
 
 const position = [60.2295, 25.0205];
 
@@ -87,8 +87,6 @@ const SeurantaMap: React.FC<any> = (props: {
           itemData.kSr = def.kSr;
           itemData.Sinf = def.Sinf;
           itemData.dSv = def.dSv;
-          itemData.Spmin = def.Spmin;
-          itemData.Spmax = def.Spmax;
           itemData.Somin = def.Somin;
 
           itemData.trigger = null;
@@ -104,6 +102,18 @@ const SeurantaMap: React.FC<any> = (props: {
               itemData.trigger = trig;
             }
           });
+
+          if (itemData.trigger && itemData.trigger.Spmin != null) {
+            itemData.Spmin = itemData.trigger.Spmin;
+          } else {
+            itemData.Spmin = def.Spmin;
+          }
+
+          if (itemData.trigger && itemData.trigger.Spmax != null) {
+            itemData.Spmax = itemData.trigger.Spmax;
+          } else {
+            itemData.Spmax = def.Spmax;
+          }
 
           const firstObs = points[interest.obsId];
 
@@ -132,11 +142,11 @@ const SeurantaMap: React.FC<any> = (props: {
           const obDates: any[] = [now];
 
           itemData.serviceId =
-            itemData.trigger && itemData.trigger.serviceId
+            itemData.trigger && itemData.trigger.serviceId != null
               ? itemData.trigger.serviceId
               : interest.serviceId;
 
-          if (itemData.serviceId !== undefined && itemData.serviceId) {
+          if (itemData.serviceId != null && itemData.serviceId) {
             for (let i = 0; i < obs.length; i++) {
               const ob = obs[i];
               if (itemData.t0 < ob.date) {
@@ -153,6 +163,9 @@ const SeurantaMap: React.FC<any> = (props: {
               }
             }
           }
+
+          itemData.lastObDate =
+            obDates.length > 1 ? obDates[obDates.length - 2] : null;
 
           itemData.count = obDates.length - 1;
 
@@ -241,16 +254,16 @@ const SeurantaMap: React.FC<any> = (props: {
 
           if (phase === 'validation') {
             const hours = hoursElapsed;
-            const inc = itemData.kSv ? (itemData.kSv * hours) / 24 : 0;
+            const inc = itemData.kSv != null ? (itemData.kSv * hours) / 24 : 0;
             s = itemData.Sv + inc;
           } else if (phase === 'similarity') {
             const hours = hoursElapsed - itemData.Tv;
-            const inc = itemData.kSs ? (itemData.kSs * hours) / 24 : 0;
+            const inc = itemData.kSs != null ? (itemData.kSs * hours) / 24 : 0;
             s = itemData.Ss + inc;
           } else if (phase === 'reobservation') {
             const hours =
               hoursElapsed - (itemData.Tv + itemData.Ts + itemData.Tr);
-            const inc = itemData.kSr ? (itemData.kSr * hours) / 24 : 0;
+            const inc = itemData.kSr != null ? (itemData.kSr * hours) / 24 : 0;
             s = itemData.Sr + inc;
           } else if (itemData.Sinf) {
             s = itemData.Sinf;
@@ -262,21 +275,29 @@ const SeurantaMap: React.FC<any> = (props: {
               const inc = itemData.trigger.kSd
                 ? (itemData.trigger.kSd * hours) / 24
                 : 0;
-              s += itemData.trigger.Sd + inc;
+              const val = itemData.trigger.Sd + inc;
+              s += itemData.trigger.Somin
+                ? Math.max(val, itemData.trigger.Somin)
+                : val;
             }
           }
 
           itemData.s = s;
           itemData.phase = phase;
 
-          for (let i = 0; i < lakes.features.length; i++) {
-            const lake = lakes.features[i];
-            if (isInside([itemData.lat, itemData.long], lake.geometry.coordinates[0])) {
-              itemData.lake = lake.geometry.coordinates[0];
-              itemData.lakeName = lake.properties.Nimi;
-              break;
-            }
-          }
+          // for (let i = 0; i < lakes.features.length; i++) {
+          //   const lake = lakes.features[i];
+          //   if (
+          //     isInside(
+          //       [itemData.lat, itemData.long],
+          //       lake.geometry.coordinates[0],
+          //     )
+          //   ) {
+          //     itemData.lake = lake.geometry.coordinates[0];
+          //     itemData.lakeName = lake.properties.Nimi;
+          //     break;
+          //   }
+          // }
 
           items.push(itemData);
         }
@@ -288,7 +309,6 @@ const SeurantaMap: React.FC<any> = (props: {
   }, [obsPoints, obs, monInterestDefs, monInterests, monInterestTriggers]);
 
   useEffect(() => {
-    console.log('fetching obs')
     if (monInterestTriggers && monInterests) {
       let items: ObsData[] = [];
       const services: string[] = [];
@@ -337,14 +357,14 @@ const SeurantaMap: React.FC<any> = (props: {
               openModal={props.openModal}
             />
           ))}
-          <GeoJSON
-              data={lakes}
-              style={{
-                color: '#006400',
-                weight: 5,
-                opacity: 0.65
-              }}
-          />
+          {/* <GeoJSON
+            data={lakes}
+            style={{
+              color: '#006400',
+              weight: 5,
+              opacity: 0.65,
+            }}
+          /> */}
           {/* {lakes.features.map(item => (
             <GeoJSON
               key={item.properties.JarviTunnu}

@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { Marker, Popup, Circle } from 'react-leaflet';
 
 import { Theme } from '../styles';
+import { tsToString } from '../utils/helpers';
 
 interface Props {
   ob: any;
@@ -29,10 +30,11 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     let size: number;
     const settings: any = {};
     if (props.ob.radius !== undefined) {
-      const realS = Math.max(
-        Math.min(props.ob.Smax ? props.ob.Smax : 0, props.ob.s),
-        props.ob.Smin ? props.ob.Smin : 0,
-      );
+      let realS = props.ob.s;
+
+      realS = props.ob.Spmin != null ? Math.max(props.ob.Spmin, realS) : realS;
+      realS = props.ob.Spmax != null ? Math.min(props.ob.Spmax, realS) : realS;
+
       settings.s = realS;
       settings.phase = props.ob.phase;
       const index = Math.max(Math.min(Math.floor(realS / (100 / 5)), 4), 0);
@@ -41,9 +43,9 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
       settings.levelOfNeed = LEVEL_OF_NEED[index];
       settings.icon = L.divIcon({
         className: 'pin',
-        iconAnchor: [size / 2, size - 2],
+        iconAnchor: [size / 2, size - 9],
         labelAnchor: [-6, 0],
-        popupAnchor: [0, (size - 4) * -1],
+        popupAnchor: [0, (size - 20) * -1],
         html: `<svg xmlns="http://www.w3.org/2000/svg" 
         width="${size}" 
         height="${size}" 
@@ -104,75 +106,63 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                 Havaintopaikka <br />
               </Header>
               <hr />
-              {renderSettings.levelOfNeed && (
+              {renderSettings.levelOfNeed != null && (
                 <Field>
                   <b>Havainnon tarve:</b>
                   {'  ' + renderSettings.levelOfNeed}
                 </Field>
               )}
-              {props.ob.serviceId && (
+              {props.ob.serviceId != null && (
                 <Field>
                   <b>Ilmoituspalvelu:</b>
                   {'  ' + props.ob.serviceId}
                 </Field>
               )}
-              {props.ob.created && (
+              {props.ob.created != null && (
                 <Field>
                   <b>Seurantakiinnostuksen alku:</b>
                   {(() => {
-                    const d = new Date(props.ob.created);
-                    return (
-                      '  ' +
-                      d.getDate() +
-                      '/' +
-                      d.getMonth() +
-                      '/' +
-                      d.getFullYear() +
-                      ' ' +
-                      d.getHours() +
-                      ':' +
-                      d.getMinutes()
-                    );
+                    return '  ' + tsToString(props.ob.created);
                   })()}
                 </Field>
               )}
-              {props.ob.t0 && props.ob.created && (
+              {props.ob.t0 != null && props.ob.created != null && (
                 <Field>
                   <b>Viimeisin kiinnostuksen herätys:</b>
                   {(() => {
                     if (props.ob.trigger) {
-                      const d = new Date(props.ob.t0);
-                      return (
-                        '  ' +
-                        d.getDate() +
-                        '/' +
-                        d.getMonth() +
-                        '/' +
-                        d.getFullYear() +
-                        ' ' +
-                        d.getHours() +
-                        ':' +
-                        d.getMinutes()
-                      );
+                      return '  ' + tsToString(props.ob.t0);
                     } else {
                       return '  ---';
                     }
                   })()}
                 </Field>
               )}
-              {props.ob.count !== null && (
+              {props.ob.s != null && (
+                <Field>
+                  <b>Viimeisin havainto:</b>
+                  {(() => {
+                    if (props.ob.lastObDate != null) {
+                      return '  ' + tsToString(props.ob.lastObDate);
+                    } else {
+                      return '  ---';
+                    }
+                  })()}
+                </Field>
+              )}
+              {props.ob.count != null && (
                 <Field>
                   <b>Havaintoja alueella seurantakiinnostuksen alun jälkeen:</b>
                   {'  ' + props.ob.count}
                 </Field>
               )}
-              {renderSettings.s !== null && (
+              {renderSettings.s != null && (
                 <Field>
                   <b>Seurantakiinnostus (S):</b>
-                  {'  ' + renderSettings.s}
+                  {'  ' + renderSettings.s.toFixed(2)}
                 </Field>
               )}
-              {props.ob.phase && (
+              {props.ob.phase != null && (
                 <Field>
                   <b>Nykyinen seurantakiinnostuksen vaihe:</b>
                   {'  ' +

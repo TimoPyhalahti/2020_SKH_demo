@@ -37,18 +37,21 @@ export const isInside = (point: number[], vs: number[][]) => {
   // ray-casting algorithm based on
   // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
-  const x = point[0], y = point[1];
+  const x = point[0],
+    y = point[1];
 
   let isInside = false;
   for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-      const xi = vs[i][0], yi = vs[i][1];
-      const xj = vs[j][0], yj = vs[j][1];
+    const xi = vs[i][0];
+    const yi = vs[i][1];
+    const xj = vs[j][0];
+    const yj = vs[j][1];
 
-      const intersect = ((yi > y) != (yj > y))
-          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) {
-        isInside = !isInside;
-      }
+    const intersect =
+      yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) {
+      isInside = !isInside;
+    }
   }
 
   return isInside;
@@ -58,4 +61,19 @@ export const hoursBetweenTimestamps = (t0: number, t1: number): number => {
   const diff = t0 - t1;
   const hours = Math.floor(diff / 1000 / 60 / 60);
   return hours;
-}
+};
+
+export const tsToString = (ts: number): string => {
+  const d = new Date(ts);
+  const s =
+    d.getDate() +
+    '/' +
+    (d.getMonth() + 1) +
+    '/' +
+    d.getFullYear() +
+    ' ' +
+    d.getHours() +
+    ':' +
+    d.getMinutes();
+  return s;
+};
