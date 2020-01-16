@@ -1,6 +1,6 @@
 import React, { lazy, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Map, Marker, Popup, TileLayer, GeoJSON } from 'react-leaflet';
 
 import { Theme } from '../styles';
 import {
@@ -21,9 +21,11 @@ import {
   haverSine,
   arrayToObject,
   hoursBetweenTimestamps,
+  isInside
 } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
+import lakes from '../assets/jarvet.json';
 
 const position = [60.2295, 25.0205];
 
@@ -38,14 +40,8 @@ const SeurantaMap: React.FC<any> = (props: {
   const [monInterestTriggers, setMonInterestTriggers] = useState<any>(null);
   const [obs, setObs] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [lakes, setLakes] = useState<any>(null);
 
   useEffect(() => {
-    lazy(() => {
-      const data = import('../assets/jarvet.json');
-      setLakes(data);
-      return data;
-    });
     getObservationPoints().then(setObsPoints);
     getMonitoringInterestDefs().then(setMonInterestDefs);
     getMonitoringInterests().then(setMonInterests);
@@ -57,12 +53,6 @@ const SeurantaMap: React.FC<any> = (props: {
       );
     });
   }, []);
-
-  useEffect(() => {
-    if (lakes) {
-      console.log(lakes)
-    }
-  }, [lakes])
 
   useEffect(() => {
     if (
@@ -278,6 +268,16 @@ const SeurantaMap: React.FC<any> = (props: {
 
           itemData.s = s;
           itemData.phase = phase;
+
+          for (let i = 0; i < lakes.features.length; i++) {
+            const lake = lakes.features[i];
+            if (isInside([itemData.lat, itemData.long], lake.geometry.coordinates[0])) {
+              itemData.lake = lake.geometry.coordinates[0];
+              itemData.lakeName = lake.properties.Nimi;
+              break;
+            }
+          }
+
           items.push(itemData);
         }
       });
@@ -337,7 +337,25 @@ const SeurantaMap: React.FC<any> = (props: {
               openModal={props.openModal}
             />
           ))}
-          {/* <GeoJSON key={keyFunction(this.props.map.data.json)} data={this.props.map.data.json} /> */}
+          <GeoJSON
+              data={lakes}
+              style={{
+                color: '#006400',
+                weight: 5,
+                opacity: 0.65
+              }}
+          />
+          {/* {lakes.features.map(item => (
+            <GeoJSON
+              key={item.properties.JarviTunnu}
+              data={item.geometry}
+              style={
+                color: '#006400',
+                weight: 5,
+                opacity: 0.65
+              }
+            /> */}
+          ))}
           <LegendContainer>
             <LegendImg />
           </LegendContainer>

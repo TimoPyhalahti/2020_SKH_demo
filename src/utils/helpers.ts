@@ -33,7 +33,7 @@ export const arrayToObject = (array: any[], key: string) => {
   }, initialValue);
 };
 
-export const isInside = (point: number[], vs: number[]) => {
+export const isInside = (point: number[], vs: number[][]) => {
   // ray-casting algorithm based on
   // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 

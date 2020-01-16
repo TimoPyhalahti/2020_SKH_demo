@@ -5,6 +5,7 @@
     "noUnusedParameters": false,
     "noImplicitReturns": false,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "noUnusedLocals": false,
     "noImplicitAny": false,
