@@ -153,7 +153,8 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
             .monint_startevent_startphase_singlevaluelist_201912031300515 &&
           getPhase(
             item.attributes
-              .monint_startevent_startphase_singlevaluelist_201912031300515,
+              .monint_startevent_startphase_singlevaluelist_201912031300515 ? item.attributes
+              .monint_startevent_startphase_singlevaluelist_201912031300515 : 'validation',
           ),
         phaseSkips: item.attributes
           .monint_startevent_passphases_multivaluelist_201912031300516
