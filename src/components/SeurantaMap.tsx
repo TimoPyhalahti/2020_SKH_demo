@@ -25,7 +25,7 @@ import {
 } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
-// import lakes from '../assets/jarvet.json';
+import lakes from '../assets/jarvet.json';
 
 const position = [60.2295, 25.0205];
 
@@ -138,6 +138,20 @@ const SeurantaMap: React.FC<any> = (props: {
             itemData.t0 = points[itemData.trigger.obsId].date;
           }
 
+          for (let i = 0; i < lakes.features.length; i++) {
+            const lake = lakes.features[i];
+            if (
+              isInside(
+                [itemData.lat, itemData.long],
+                lake.geometry.coordinates[0],
+              )
+            ) {
+              itemData.lake = lake;
+              itemData.lakeName = lake.properties.Nimi;
+              break;
+            }
+          }
+
           const now = Date.now();
           const obDates: any[] = [now];
 
@@ -152,11 +166,22 @@ const SeurantaMap: React.FC<any> = (props: {
               if (itemData.t0 < ob.date) {
                 if (
                   ob.serviceId === itemData.serviceId &&
-                  ob.id !== firstObsId &&
-                  haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
-                    itemData.radius
+                  ob.id !== firstObsId
                 ) {
-                  obDates.unshift(ob.date);
+                  if (
+                    itemData.lake &&
+                    isInside(
+                      [itemData.lat, itemData.long],
+                      itemData.lake.geometry.coordinates[0],
+                    )
+                  ) {
+                    obDates.unshift(ob.date);
+                  } else if (
+                    haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
+                    itemData.radius
+                  ) {
+                    obDates.unshift(ob.date);
+                  }
                 }
               } else {
                 break;
@@ -285,20 +310,6 @@ const SeurantaMap: React.FC<any> = (props: {
           itemData.s = s;
           itemData.phase = phase;
 
-          // for (let i = 0; i < lakes.features.length; i++) {
-          //   const lake = lakes.features[i];
-          //   if (
-          //     isInside(
-          //       [itemData.lat, itemData.long],
-          //       lake.geometry.coordinates[0],
-          //     )
-          //   ) {
-          //     itemData.lake = lake.geometry.coordinates[0];
-          //     itemData.lakeName = lake.properties.Nimi;
-          //     break;
-          //   }
-          // }
-
           items.push(itemData);
         }
       });
@@ -357,14 +368,14 @@ const SeurantaMap: React.FC<any> = (props: {
               openModal={props.openModal}
             />
           ))}
-          {/* <GeoJSON
+          <GeoJSON
             data={lakes}
             style={{
-              color: '#006400',
+              color: 'blue',
               weight: 5,
               opacity: 0.65,
             }}
-          /> */}
+          />
           {/* {lakes.features.map(item => (
             <GeoJSON
               key={item.properties.JarviTunnu}
@@ -404,7 +415,7 @@ const LegendContainer: any = styled.div`
 const LegendImg: any = styled.img.attrs({
   src: require('../assets/legend.svg'),
 })`
-  background-color: #ffffff;
+  background-color: rgb(255,255,255, 0.7);
   padding: 10px;
   height: 120px;
   border-radius: 4px;

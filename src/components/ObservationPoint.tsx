@@ -30,14 +30,25 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     let size: number;
     const settings: any = {};
     if (props.ob.radius !== undefined) {
-      let realS = props.ob.s;
+      let p = props.ob.s;
+      !props.ob.Spmin && (props.ob.Spmin = 0);
+      !props.ob.Spmax && (props.ob.Spmax = 100);
 
-      realS = props.ob.Spmin != null ? Math.max(props.ob.Spmin, realS) : realS;
-      realS = props.ob.Spmax != null ? Math.min(props.ob.Spmax, realS) : realS;
+      const diff = Math.abs(props.ob.Spmin - props.ob.Spmax);
+      if (props.ob.Spmin <= props.ob.Spmax) {
+        p = p - props.ob.Spmin;
+        p = Math.max(Math.min(p / diff, 1), 0);
+      } else {
+        p = p - props.ob.Spmax;
+        p = Math.max(Math.min(1 - (p / diff), 1), 0);
+      }
 
-      settings.s = realS;
+      p *= 100;
+
+      settings.p = p;
+      settings.s = props.ob.s;
       settings.phase = props.ob.phase;
-      const index = Math.max(Math.min(Math.floor(realS / (100 / 5)), 4), 0);
+      const index = Math.max(Math.min(Math.floor(p / (100 / 5)), 4), 0);
       color = COLORS[index];
       size = 50 + index * 4;
       settings.levelOfNeed = LEVEL_OF_NEED[index];
@@ -88,7 +99,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     <>
       {renderSettings && (
         <>
-          {props.ob.radius && renderSettings.s >= 10 && (
+          {props.ob.radius && renderSettings.p >= 10 && (
             <Circle
               center={position}
               radius={props.ob.radius}
@@ -102,16 +113,21 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
           (
           <Point position={position} icon={renderSettings.icon}>
             <Tooltip>
-              <Header>
-                Havaintopaikka <br />
-              </Header>
-              <hr />
               {renderSettings.levelOfNeed != null && (
-                <Field>
-                  <b>Havainnon tarve:</b>
-                  {'  ' + renderSettings.levelOfNeed}
-                </Field>
+                <>
+                  <Header>
+                    Havainnon tarve alueella:{' '}
+                    <span style={{ color: renderSettings.color }}>
+                      <b>{renderSettings.levelOfNeed}</b>
+                    </span>{' '}
+                    <br />
+                  </Header>
+                </>
               )}
+              {props.ob.serviceId && (
+                <Button onClick={props.openModal}>Lisää havainto</Button>
+              )}
+              <hr style={{ margin: '15px 0 15px 0' }} />
               {props.ob.serviceId != null && (
                 <Field>
                   <b>Ilmoituspalvelu:</b>
@@ -162,6 +178,12 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                   {'  ' + renderSettings.s.toFixed(2)}
                 </Field>
               )}
+              {renderSettings.p != null && (
+                <Field>
+                  <b>Skaalattu seurantakiinnostus (P):</b>
+                  {'  ' + renderSettings.p.toFixed(2) + '%'}
+                </Field>
+              )}
               {props.ob.phase != null && (
                 <Field>
                   <b>Nykyinen seurantakiinnostuksen vaihe:</b>
@@ -180,9 +202,6 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                     })()}
                 </Field>
               )}
-              {props.ob.serviceId && (
-                <Button onClick={props.openModal}>Lisää havainto</Button>
-              )}
             </Tooltip>
           </Point>
           )
@@ -200,7 +219,7 @@ const Tooltip: any = styled(Popup)`
 `;
 
 const Header: any = styled.p`
-  font-size: 1rem;
+  font-size: 1.2rem;
   margin: 0 !important;
 `;
 
@@ -213,7 +232,7 @@ const Field: any = styled.p`
 const Button: any = styled.p`
   font-size: 1rem;
   line-height: 1rem;
-  margin: 15px auto 5px auto !important;
+  margin: 15px auto 0 auto !important;
   border-radius: 5px;
   padding: 10px;
   text-align: center;

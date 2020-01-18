@@ -1,36 +1,33 @@
-# React quickstart template
+# Seurantakiinnostusdemo
 
-This is a quickstart react template for fast prototyping. It has type-checking with TypeScript, but will compile regardless of the type errors.
+This is an app that calculates and shows the level of interest of getting observations near determined points on a map. It uses SYKE's CitobsDB-system.
 
-Utilizes Styled Components, Webpack, and Babel.
+Deployed here: <https://avoinorg.github.io/seurantakiinnostus-demo/>.
+
+Created using React, TypeScript, and Leaflet.
+
+
+## Development
+
+You can set the project with
+
+    npm install
 
 ### Using development server
 
-```shell
-npm start
-```
-
-### Building
-
-```shell
-npm run build
-```
+    npm start
 
 ### Type-checking
 
-```shell
-npm run type-check
-```
+    npm run type-check
 
-## Docker  
-A docker image for this repository can be found [here.](https://hub.docker.com/repository/docker/xbexbex/react-quickstart-template)  
-### Running and installing
-```shell
-docker run -p 5000:5000 xbexbex/react-quickstart-template
-```
-### Or building locally
-```shell
-docker build . -t <name-for-the-project>
-docker run <name-for-the-project>
-```
+### Building
+
+    npm run build
+
+### Deploying
+
+The app is deployed on github pages. After running the build command, deploy with
+
+    npm run deploy
 
