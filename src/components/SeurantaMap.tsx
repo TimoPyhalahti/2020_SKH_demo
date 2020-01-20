@@ -415,7 +415,7 @@ const LegendContainer: any = styled.div`
 const LegendImg: any = styled.img.attrs({
   src: require('../assets/legend.svg'),
 })`
-  background-color: rgb(255,255,255, 0.7);
+  background-color: rgb(255, 255, 255, 0.7);
   padding: 10px;
   height: 120px;
   border-radius: 4px;

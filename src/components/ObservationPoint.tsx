@@ -40,7 +40,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
         p = Math.max(Math.min(p / diff, 1), 0);
       } else {
         p = p - props.ob.Spmax;
-        p = Math.max(Math.min(1 - (p / diff), 1), 0);
+        p = Math.max(Math.min(1 - p / diff, 1), 0);
       }
 
       p *= 100;
@@ -49,27 +49,50 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
       settings.s = props.ob.s;
       settings.phase = props.ob.phase;
       const index = Math.max(Math.min(Math.floor(p / (100 / 5)), 4), 0);
-      color = COLORS[index];
-      size = 50 + index * 4;
-      settings.levelOfNeed = LEVEL_OF_NEED[index];
-      settings.icon = L.divIcon({
-        className: 'pin',
-        iconAnchor: [size / 2, size - 9],
-        labelAnchor: [-6, 0],
-        popupAnchor: [0, (size - 20) * -1],
-        html: `<svg xmlns="http://www.w3.org/2000/svg" 
-        width="${size}" 
-        height="${size}" 
-        viewBox="0 0 24 24" 
-        fill="${color}"
-        fill-opacity="0.8" 
-        stroke="black" 
-        stroke-width="1.5" stroke-linecap="round" 
-        stroke-linejoin="round" 
-        class="feather feather-map-pin">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle></svg>`,
-      });
+      if (p > 0) {
+        color = COLORS[index];
+        settings.levelOfNeed = LEVEL_OF_NEED[index];
+        size = 50 + index * 4;
+        settings.icon = L.divIcon({
+          className: 'pin',
+          iconAnchor: [size / 2, size - 9],
+          labelAnchor: [-6, 0],
+          popupAnchor: [0, (size - 20) * -1],
+          html: `<svg xmlns="http://www.w3.org/2000/svg" 
+            width="${size}" 
+            height="${size}" 
+            viewBox="0 0 24 24" 
+            fill="${color}"
+            fill-opacity="0.8" 
+            stroke="black" 
+            stroke-width="1.5" stroke-linecap="round" 
+            stroke-linejoin="round" 
+            class="feather feather-map-pin">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle></svg>`,
+        });
+      } else {
+        color = 'grey';
+        size = 28;
+        settings.levelOfNeed = 'ei tarvetta';
+        settings.icon = L.divIcon({
+          className: 'pin',
+          iconAnchor: [size / 2, size / 2],
+          labelAnchor: [0, 0],
+          popupAnchor: [0, -10],
+          html: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" width="24" height="24"><defs><path d="M24 12C24 5.38 18.62 0 12 0C5.38 0 0 5.38 0 12C0 18.62 5.38 24 12 24C18.62 24 24 18.62 24 12Z" id="aRBYmkoLF"></path><clipPath id="clipc3FZk9oi4y"><use xlink:href="#aRBYmkoLF" opacity="1"></use></clipPath></defs><g><g><g><use xlink:href="#aRBYmkoLF" 
+            opacity="1" 
+            fill="${color}" 
+            fill-opacity="1">
+            </use><g clip-path="url(#clipc3FZk9oi4y)"><use xlink:href="#aRBYmkoLF" 
+            opacity="1" 
+            fill-opacity="0" 
+            stroke="black" 
+            stroke-width="2.5" 
+            stroke-opacity="1">
+            </use></g></g></g></g></svg>`,
+        });
+      }
     } else {
       size = 44;
       color = NO_COLOR;
@@ -94,6 +117,10 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     settings.color = color;
     setRenderSettings(settings);
   }, []);
+
+  const handleClick = () => {
+    props.openModal(props.ob.serviceId);
+  };
 
   return (
     <>
@@ -125,7 +152,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
                 </>
               )}
               {props.ob.serviceId && (
-                <Button onClick={props.openModal}>Lisää havainto</Button>
+                <Button onClick={handleClick}>Lisää havainto</Button>
               )}
               <hr style={{ margin: '15px 0 15px 0' }} />
               {props.ob.serviceId != null && (

@@ -8,26 +8,42 @@ type Props = {};
 
 const Main: React.FC<Props> = ({}) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [modalCreated, setModalCreated] = useState<boolean>(false);
+  const [modalService, setModalService] = useState<any>(null);
 
-  useEffect(() => {
-    if (modalOpen && !modalCreated) {
-      setModalCreated(true);
+  useEffect(() => {}, []);
+
+  const handleClick = (serviceId: string) => {
+    if (serviceId === modalService) {
+    } else {
+      setModalService(serviceId);
     }
-  }, [modalOpen]);
+    setModalOpen(true);
+
+    // fetch and run the citobsdb widget script
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    document.getElementsByTagName('head')[0].appendChild(script);
+    script.src = 'https://www.jarviwiki.fi/common/citobsembed.js';
+  };
 
   return (
     <Container>
       <div style={{ display: modalOpen ? 'flex' : 'none', flex: 1 }}>
-        {modalCreated && (
+        {modalOpen && (
           <ModalContainer>
             <ModalButton onClick={() => setModalOpen(false)}>X</ModalButton>
-            {modalOpen}
-            <WidgetContainer dangerouslySetInnerHTML={{ __html: widgetBody }} />
+            <WidgetContainer
+              dangerouslySetInnerHTML={{
+                __html: createWidgetBody(modalService),
+              }}
+            />
           </ModalContainer>
         )}
       </div>
-      <SeurantaMap hidden={modalOpen} openModal={() => setModalOpen(true)} />
+      <SeurantaMap
+        hidden={modalOpen}
+        openModal={(serviceId: string) => handleClick(serviceId)}
+      />
     </Container>
   );
 };
@@ -35,7 +51,7 @@ const Main: React.FC<Props> = ({}) => {
 const Container: any = styled.div`
   display: flex;
   flex: 1;
-  background-color: ${Theme.color.primary}
+  background-color: ${Theme.color.primary};
 `;
 
 const ModalContainer: any = styled.div`
@@ -65,24 +81,24 @@ const ModalButton: any = styled.p`
 
 const WidgetContainer: any = styled.div``;
 
-const widgetBody: string = `
+const createWidgetBody = (serviceId: string) => `
   <div class="CitObsO311Widget"
-  data-type="SingleServiceQuestionnaire"
-  data-service_code="snow_combined_service_code_201806122300251"
-  data-show-service_name="true"
-  data-show-service_description="true"
-  data-show-map="true"
-  data-map-height="300"
-  data-show-obses="true"
-  data-obses-max_age="10"
-  data-obses-radius="9"
-  data-obses-label=""
-  data-obses-color=""
-  data-obses-cluster="true"
-  data-show-questionnaire="true"
-  data-images-count="2"
-  data-api-key="3862e067-0326-4678-ad03-56811bbb8638"
-></div>`;
+    data-type="SingleServiceQuestionnaire"
+    data-service_code="${serviceId}"
+    data-show-service_name="true"
+    data-show-service_description="true"
+    data-show-map="true"
+    data-map-height="300"
+    data-show-obses="true"
+    data-obses-max_age="10"
+    data-obses-radius="9"
+    data-obses-label=""
+    data-obses-color=""
+    data-obses-cluster="true"
+    data-show-questionnaire="true"
+    data-images-count="2"
+    data-api-key="3862e067-0326-4678-ad03-56811bbb8638"
+  ></div>`;
 
 const Loading: any = styled.img.attrs(() => ({
   src: require('../assets/loading.svg'),
