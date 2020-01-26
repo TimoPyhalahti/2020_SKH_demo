@@ -37,15 +37,16 @@ export const isInside = (point: number[], vs: number[][]) => {
   // ray-casting algorithm based on
   // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
-  const x = point[0],
-    y = point[1];
+  const x = point[0];
+  const y = point[1];
 
   let isInside = false;
+
   for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-    const xi = vs[i][0];
-    const yi = vs[i][1];
-    const xj = vs[j][0];
-    const yj = vs[j][1];
+    const xi = vs[i][1];
+    const yi = vs[i][0];
+    const xj = vs[j][1];
+    const yj = vs[j][0];
 
     const intersect =
       yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;

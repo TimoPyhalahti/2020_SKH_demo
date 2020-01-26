@@ -148,15 +148,13 @@ const SeurantaMap: React.FC<any> = (props: {
 
           for (let i = 0; i < lakes.features.length; i++) {
             const lake = lakes.features[i];
-            if (
-              isInside(
-                [itemData.lat, itemData.long],
-                lake.geometry.coordinates[0],
-              )
-            ) {
-              itemData.lake = lake;
-              itemData.lakeName = lake.properties.Nimi;
-              break;
+            const coords = lake.geometry.coordinates;
+            for (let j = 0; j < coords.length; j++) {
+              if (isInside([itemData.lat, itemData.long], coords[j])) {
+                itemData.lake = lake;
+                itemData.lakeName = lake.properties.Nimi;
+                break;
+              }
             }
           }
 
@@ -177,18 +175,19 @@ const SeurantaMap: React.FC<any> = (props: {
                   ob.id !== firstObsId
                 ) {
                   if (
-                    itemData.lake &&
-                    isInside(
-                      [itemData.lat, itemData.long],
-                      itemData.lake.geometry.coordinates[0],
-                    )
-                  ) {
-                    obDates.unshift(ob.date);
-                  } else if (
                     haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
                     itemData.radius
                   ) {
-                    obDates.unshift(ob.date);
+                    if (
+                      !itemData.lake ||
+                      (itemData.lake &&
+                        isInside(
+                          [itemData.lat, itemData.long],
+                          itemData.lake.geometry.coordinates[0],
+                        ))
+                    ) {
+                      obDates.unshift(ob.date);
+                    }
                   }
                 }
               } else {

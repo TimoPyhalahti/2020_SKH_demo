@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import L from 'leaflet';
-import { Marker, Popup, Circle } from 'react-leaflet';
+import { Marker, Popup, Circle, GeoJSON } from 'react-leaflet';
 
 import { Theme } from '../styles';
 import { tsToString } from '../utils/helpers';
@@ -23,6 +23,7 @@ const LEVEL_OF_NEED = [
 
 const ObservationPoint: React.FC<Props> = (props: Props) => {
   const [renderSettings, setRenderSettings] = useState<any>(null);
+  const [drawLake, setDrawLake] = useState<boolean>(false);
   const position: number[] = [props.ob.lat, props.ob.long];
 
   useEffect(() => {
@@ -122,11 +123,28 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
     props.openModal(props.ob.serviceId);
   };
 
+  const handlePopupOpen = () => {
+    props.ob.lake && setDrawLake(true);
+  };
+
+  const handlePopupClose = () => {
+    props.ob.lake && setDrawLake(false);
+  };
+
   return (
     <>
       {renderSettings && (
         <>
-          {props.ob.radius && renderSettings.p >= 10 && (
+          {(() => {
+            if (
+              props.ob.radius &&
+              // renderSettings.p >= 10 &&
+              (!props.ob.lake || (props.ob.lake && drawLake))
+            ) {
+              return true;
+            }
+            return false;
+          })() && (
             <Circle
               center={position}
               radius={props.ob.radius}
@@ -137,8 +155,23 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
               fillOpacity={0.65}
             />
           )}
+          {drawLake && (
+            <GeoJSON
+              data={props.ob.lake}
+              style={{
+                color: renderSettings.color,
+                weight: 8,
+                opacity: 0.55,
+              }}
+            />
+          )}
           (
-          <Point position={position} icon={renderSettings.icon}>
+          <Point
+            position={position}
+            icon={renderSettings.icon}
+            onPopupOpen={handlePopupOpen}
+            onPopupClose={handlePopupClose}
+          >
             <Tooltip>
               {renderSettings.levelOfNeed != null && (
                 <>
