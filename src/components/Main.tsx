@@ -9,6 +9,7 @@ type Props = {};
 const Main: React.FC<Props> = ({}) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalService, setModalService] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {}, []);
 
@@ -23,7 +24,20 @@ const Main: React.FC<Props> = ({}) => {
     const script = document.createElement('script');
     script.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(script);
-    script.src = 'https://www.jarviwiki.fi/common/citobsembed.js';
+    //script.src = 'https://www.jarviwiki.fi/common/citobsembed.js';
+    script.src = require('../assets/citobs.js');
+    const divs: HTMLCollectionOf<Element> = document.getElementsByClassName(
+      'citobso311_content',
+    );
+    console.log(divs);
+
+    const timer = setTimeout(() => {
+      const divs: HTMLCollectionOf<Element> = document.getElementsByClassName(
+        'citobso311_content',
+      );
+      console.log(divs);
+    }, 6000);
+    return () => clearTimeout(timer);
   };
 
   return (
@@ -33,10 +47,12 @@ const Main: React.FC<Props> = ({}) => {
           <ModalContainer>
             <ModalButton onClick={() => setModalOpen(false)}>X</ModalButton>
             <WidgetContainer
+              style={{ display: loading ? 'none' : 'flex' }}
               dangerouslySetInnerHTML={{
                 __html: createWidgetBody(modalService),
               }}
             />
+            {loading && <Loading />}
           </ModalContainer>
         )}
       </div>

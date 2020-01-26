@@ -25,9 +25,8 @@ import {
 } from '../utils/helpers';
 import ObservationPoint from './ObservationPoint';
 import Loading from './Loading';
-import lakes from '../assets/jarvet.json';
 
-const position = [60.2295, 25.0205];
+const lakes: any = require('../assets/jarvet.json');
 
 const SeurantaMap: React.FC<any> = (props: {
   openModal: any;
@@ -40,8 +39,17 @@ const SeurantaMap: React.FC<any> = (props: {
   const [monInterestTriggers, setMonInterestTriggers] = useState<any>(null);
   const [obs, setObs] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [position, setPosition] = useState<number[] | null>([
+    65.449704,
+    26.839269,
+  ]);
+  const [zoom, setZoom] = useState<number>(6);
 
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      setPosition([pos.coords.latitude, pos.coords.longitude]);
+      setZoom(15);
+    });
     getObservationPoints().then(setObsPoints);
     getMonitoringInterestDefs().then(setMonInterestDefs);
     getMonitoringInterests().then(setMonInterests);
@@ -356,7 +364,7 @@ const SeurantaMap: React.FC<any> = (props: {
       {loading ? (
         <Loading />
       ) : (
-        <MapContainer center={position} zoom={14}>
+        <MapContainer center={position} zoom={zoom}>
           <TileLayer
             url="http://tiles.kartat.kapsi.fi/taustakartta/{z}/{x}/{y}.png"
             attribution='&copy; Karttamateriaali <a href="http://www.maanmittauslaitos.fi/avoindata">Maanmittauslaitos</a>'
@@ -376,17 +384,6 @@ const SeurantaMap: React.FC<any> = (props: {
               opacity: 0.65,
             }}
           />
-          {/* {lakes.features.map(item => (
-            <GeoJSON
-              key={item.properties.JarviTunnu}
-              data={item.geometry}
-              style={
-                color: '#006400',
-                weight: 5,
-                opacity: 0.65
-              }
-            /> */}
-          ))}
           <LegendContainer>
             <LegendImg />
           </LegendContainer>
@@ -401,6 +398,7 @@ const MapContainer: any = styled(Map)`
   flex: 1;
   background: ${Theme.color.primary};
   font-family ${Theme.font.secondary};
+  background: white;
 `;
 
 const LegendContainer: any = styled.div`
