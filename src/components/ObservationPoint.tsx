@@ -23,7 +23,7 @@ const LEVEL_OF_NEED = [
 
 const ObservationPoint: React.FC<Props> = (props: Props) => {
   const [renderSettings, setRenderSettings] = useState<any>(null);
-  const [drawLake, setDrawLake] = useState<boolean>(false);
+  const [drawIndicator, setDrawIndicator] = useState<boolean>(false);
   const position: number[] = [props.ob.lat, props.ob.long];
 
   useEffect(() => {
@@ -124,27 +124,18 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
   };
 
   const handlePopupOpen = () => {
-    props.ob.lake && setDrawLake(true);
+    setDrawIndicator(true);
   };
 
   const handlePopupClose = () => {
-    props.ob.lake && setDrawLake(false);
+    setDrawIndicator(false);
   };
 
   return (
     <>
       {renderSettings && (
         <>
-          {(() => {
-            if (
-              props.ob.radius &&
-              // renderSettings.p >= 10 &&
-              (!props.ob.lake || (props.ob.lake && drawLake))
-            ) {
-              return true;
-            }
-            return false;
-          })() && (
+          {props.ob.radius && drawIndicator && (
             <Circle
               center={position}
               radius={props.ob.radius}
@@ -155,7 +146,7 @@ const ObservationPoint: React.FC<Props> = (props: Props) => {
               fillOpacity={0.65}
             />
           )}
-          {drawLake && (
+          {drawIndicator && props.ob.lake && (
             <GeoJSON
               data={props.ob.lake}
               style={{

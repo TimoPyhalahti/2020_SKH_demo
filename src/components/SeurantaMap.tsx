@@ -161,19 +161,18 @@ const SeurantaMap: React.FC<any> = (props: {
           const now = Date.now();
           const obDates: any[] = [now];
 
-          itemData.serviceId =
+          itemData.serviceId = interest.serviceId;
+
+          const serviceId =
             itemData.trigger && itemData.trigger.serviceId != null
               ? itemData.trigger.serviceId
               : interest.serviceId;
 
-          if (itemData.serviceId != null && itemData.serviceId) {
+          if (serviceId != null && serviceId) {
             for (let i = 0; i < obs.length; i++) {
               const ob = obs[i];
               if (itemData.t0 < ob.date) {
-                if (
-                  ob.serviceId === itemData.serviceId &&
-                  ob.id !== firstObsId
-                ) {
+                if (ob.serviceId === serviceId && ob.id !== firstObsId) {
                   if (
                     haverSine(ob.lat, ob.long, itemData.lat, itemData.long) <=
                     itemData.radius

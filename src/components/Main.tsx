@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import { Theme } from '../styles';
 import SeurantaMap from './SeurantaMap';
+import Loading from './Loading';
 
 type Props = {};
 
@@ -18,26 +19,24 @@ const Main: React.FC<Props> = ({}) => {
     } else {
       setModalService(serviceId);
     }
+    setLoading(true);
     setModalOpen(true);
 
     // fetch and run the citobsdb widget script
     const script = document.createElement('script');
     script.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(script);
-    //script.src = 'https://www.jarviwiki.fi/common/citobsembed.js';
-    script.src = require('../assets/citobs.js');
-    const divs: HTMLCollectionOf<Element> = document.getElementsByClassName(
-      'citobso311_content',
-    );
-    console.log(divs);
+    script.src = 'https://www.jarviwiki.fi/common/citobsembed.js';
 
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       const divs: HTMLCollectionOf<Element> = document.getElementsByClassName(
-        'citobso311_content',
+        'CitObsO311Widget',
       );
-      console.log(divs);
-    }, 6000);
-    return () => clearTimeout(timer);
+      if (divs.length > 0 && divs[0].children.length > 0) {
+        clearInterval(timer);
+        setLoading(false);
+      }
+    }, 100);
   };
 
   return (
@@ -115,13 +114,5 @@ const createWidgetBody = (serviceId: string) => `
     data-images-count="2"
     data-api-key="3862e067-0326-4678-ad03-56811bbb8638"
   ></div>`;
-
-const Loading: any = styled.img.attrs(() => ({
-  src: require('../assets/loading.svg'),
-}))`
-  color: ${Theme.color.secondary};
-  width: 10rem;
-  margin: auto;
-`;
 
 export default Main;

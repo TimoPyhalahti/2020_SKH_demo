@@ -7,7 +7,7 @@
 
 // Localize jQuery variable
 var jQuery;
-
+console.log('meems')
 /******** Load jQuery if not present *********/
 if (window.jQuery === undefined || window.jQuery.fn.jquery !== '1.11.3') {
     var script_tag = document.createElement('script');

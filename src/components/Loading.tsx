@@ -15,6 +15,7 @@ const Container: any = styled.div`
   flex-grow: 1;
   display: flex;
   justify-content: center;
+  height: 100%;
 `;
 
 const Subcontainer: any = styled.div`
