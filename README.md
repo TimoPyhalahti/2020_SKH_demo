@@ -9,7 +9,7 @@ Created using React, TypeScript, and Leaflet.
 
 ## Development
 
-You can set the project with
+You can set up the project with
 
     npm install
 
@@ -23,6 +23,8 @@ You can set the project with
 
 ### Building
 
+Builds to dist folder
+
     npm run build
 
 ### Deploying
@@ -31,3 +33,4 @@ The app is deployed on github pages. After running the build command, deploy wit
 
     npm run deploy
 
+Alternatively the contents of the dist folder can be deployed to any other server, such as an AWS S3 bucket.
