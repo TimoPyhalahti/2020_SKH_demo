@@ -23,7 +23,7 @@ You can set up the project with
 
 ### Building
 
-Builds to dist folder
+Builds the bundle dist folder
 
     npm run build
 
@@ -33,4 +33,4 @@ The app is deployed on github pages. After running the build command, deploy wit
 
     npm run deploy
 
-Alternatively the contents of the dist folder can be deployed to any other server, such as an AWS S3 bucket.
+Alternatively the bundle can be manually deployed to any other server, such as an AWS S3 bucket.
