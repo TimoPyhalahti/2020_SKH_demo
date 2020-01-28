@@ -46,12 +46,19 @@ const Main: React.FC<Props> = ({}) => {
           <ModalContainer>
             <ModalButton onClick={() => setModalOpen(false)}>X</ModalButton>
             <Widget
-              style={{ display: loading ? 'none' : 'flex' }}
               dangerouslySetInnerHTML={{
-                __html: createWidgetBody(modalService),
+                __html: modalOpen ? (
+                  createWidgetBody(modalService)
+                ) : (
+                  <div></div>
+                ),
               }}
             />
-            {loading && <Loading />}
+            {loading && (
+              <LoadingContainer>
+                <Loading />
+              </LoadingContainer>
+            )}
           </ModalContainer>
         )}
       </div>
@@ -81,6 +88,7 @@ const ModalContainer: any = styled.div`
   overflow-x: scroll;
   padding: 5px 10px 10px 10px;
   display: flex;
+  flex-direction: column;
   color: black;
 `;
 
@@ -96,8 +104,14 @@ const ModalButton: any = styled.p`
 `;
 
 const Widget: any = styled.div`
-  display: inline-block;
   margin: auto;
+`;
+
+const LoadingContainer: any = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const createWidgetBody = (serviceId: string) => `
