@@ -5,14 +5,14 @@ import { Theme } from '../styles';
 import SeurantaMap from './SeurantaMap';
 import Loading from './Loading';
 
+declare const API_KEY: string;
+
 type Props = {};
 
 const Main: React.FC<Props> = ({}) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalService, setModalService] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {}, []);
 
   const handleClick = (serviceId: string) => {
     if (serviceId === modalService) {
@@ -120,7 +120,7 @@ const createWidgetBody = (serviceId: string) => `
     data-obses-cluster="true"
     data-show-questionnaire="true"
     data-images-count="2"
-    data-api-key="3862e067-0326-4678-ad03-56811bbb8638"
+    data-api-key="${API_KEY}"
   ></div>`;
 
 export default Main;
