@@ -17,7 +17,7 @@ You can set up the project with
 
     npm start
 
-By default, the server can be accessed at <localhost:8080>.
+By default, the server can be accessed on port 8080.
 
 ### Type-checking
 
