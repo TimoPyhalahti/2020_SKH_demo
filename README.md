@@ -17,13 +17,21 @@ You can set up the project with
 
     npm start
 
+By default, the server can be accessed on port 8080.
+
 ### Type-checking
+
+TypeScript type-checking can manually be run with
 
     npm run type-check
 
 ### Building
 
-Builds the bundle dist folder
+For the app to function correctly a working CitobsDB I-API key must be declared in the env variables as API_KEY before building. For example
+
+    export API_KEY='your-api-key-here'
+
+Build the bundle into the dist folder with
 
     npm run build
 
