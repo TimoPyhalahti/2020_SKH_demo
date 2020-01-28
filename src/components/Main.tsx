@@ -45,14 +45,12 @@ const Main: React.FC<Props> = ({}) => {
         {modalOpen && (
           <ModalContainer>
             <ModalButton onClick={() => setModalOpen(false)}>X</ModalButton>
-            <WidgetContainer>
-              <Widget
-                style={{ display: loading ? 'none' : 'flex' }}
-                dangerouslySetInnerHTML={{
-                  __html: createWidgetBody(modalService),
-                }}
-              />
-            </WidgetContainer>
+            <Widget
+              style={{ display: loading ? 'none' : 'flex' }}
+              dangerouslySetInnerHTML={{
+                __html: createWidgetBody(modalService),
+              }}
+            />
             {loading && <Loading />}
           </ModalContainer>
         )}
@@ -97,12 +95,10 @@ const ModalButton: any = styled.p`
   }
 `;
 
-const WidgetContainer: any = styled.div`
+const Widget: any = styled.div`
   display: inline-block;
   margin: auto;
 `;
-
-const Widget: any = styled.div``;
 
 const createWidgetBody = (serviceId: string) => `
   <div class="CitObsO311Widget"
