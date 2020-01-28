@@ -45,12 +45,14 @@ const Main: React.FC<Props> = ({}) => {
         {modalOpen && (
           <ModalContainer>
             <ModalButton onClick={() => setModalOpen(false)}>X</ModalButton>
-            <WidgetContainer
-              style={{ display: loading ? 'none' : 'flex' }}
-              dangerouslySetInnerHTML={{
-                __html: createWidgetBody(modalService),
-              }}
-            />
+            <WidgetContainer>
+              <Widget
+                style={{ display: loading ? 'none' : 'flex' }}
+                dangerouslySetInnerHTML={{
+                  __html: createWidgetBody(modalService),
+                }}
+              />
+            </WidgetContainer>
             {loading && <Loading />}
           </ModalContainer>
         )}
@@ -80,6 +82,7 @@ const ModalContainer: any = styled.div`
   overflow: scroll;
   overflow-x: scroll;
   padding: 5px 10px 10px 10px;
+  display: flex;
   color: black;
 `;
 
@@ -94,7 +97,12 @@ const ModalButton: any = styled.p`
   }
 `;
 
-const WidgetContainer: any = styled.div``;
+const WidgetContainer: any = styled.div`
+  display: inline-block;
+  margin: auto;
+`;
+
+const Widget: any = styled.div``;
 
 const createWidgetBody = (serviceId: string) => `
   <div class="CitObsO311Widget"
@@ -105,7 +113,7 @@ const createWidgetBody = (serviceId: string) => `
     data-show-map="true"
     data-map-height="300"
     data-show-obses="true"
-    data-obses-max_age="10"
+    data-obses-max_age="90"
     data-obses-radius="9"
     data-obses-label=""
     data-obses-color=""
