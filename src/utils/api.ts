@@ -54,7 +54,9 @@ export const getMonitoringInterests = (): Promise<MonInterestData[]> => {
         serviceId: item.attributes.string_201911180955377,
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
-        radius: Number(item.attributes.number_201911180956460),
+        radius: item.attributes.number_201911180956460
+          ? Number(item.attributes.number_201911180956460)
+          : 0,
       }));
       return items;
     })
@@ -78,48 +80,118 @@ export const getMonitoringInterestDefs = (): Promise<MonInterestDefData[]> => {
         date: Date.parse(item.requested_datetime),
         lat: Number(item.lat.replace(/,/, '.')),
         long: Number(item.long.replace(/,/, '.')),
-        Tv: Number(
-          item.attributes.monint_Tv_number_201912121702023.replace(/,/, '.'),
-        ),
-        Ts: Number(
-          item.attributes.monint_Ts_number_201912121702030.replace(/,/, '.'),
-        ),
-        Tr: Number(
-          item.attributes.monint_Tr_number_201912121702034.replace(/,/, '.'),
-        ),
-        Sv: Number(
-          item.attributes.monint_Sv_number_201912121702028.replace(/,/, '.'),
-        ),
-        Ss: Number(
-          item.attributes.monint_Ss_number_201912121702032.replace(/,/, '.'),
-        ),
-        Sr: Number(
-          item.attributes.monint_Sr_number_201912121702035.replace(/,/, '.'),
-        ),
-        kSv: Number(
-          item.attributes.monint_kSv_number_201912121702029.replace(/,/, '.'),
-        ),
-        kSs: Number(
-          item.attributes.monint_kSs_number_201912121702033.replace(/,/, '.'),
-        ),
-        kSr: Number(
-          item.attributes.monint_kSr_number_201912121702037.replace(/,/, '.'),
-        ),
-        Sinf: Number(
-          item.attributes.monint_Sinf_number_201912121702038.replace(/,/, '.'),
-        ),
-        dSv: Number(
-          item.attributes.monint_dSv_number_201912121702027.replace(/,/, '.'),
-        ),
-        Spmin: Number(
-          item.attributes.monint_Spmin_number_201912121753281.replace(/,/, '.'),
-        ),
-        Spmax: Number(
-          item.attributes.monint_Spmax_number_201912121756330.replace(/,/, '.'),
-        ),
-        Somin: Number(
-          item.attributes.monint_Somin_number_201912121743338.replace(/,/, '.'),
-        ),
+        Tv: item.attributes.monint_Tv_number_201912121702023
+          ? Number(
+              item.attributes.monint_Tv_number_201912121702023.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Ts: item.attributes.monint_Ts_number_201912121702030
+          ? Number(
+              item.attributes.monint_Ts_number_201912121702030.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Tr: item.attributes.monint_Tr_number_201912121702034
+          ? Number(
+              item.attributes.monint_Tr_number_201912121702034.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Sv: item.attributes.monint_Sv_number_201912121702028
+          ? Number(
+              item.attributes.monint_Sv_number_201912121702028.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Ss: item.attributes.monint_Ss_number_201912121702032
+          ? Number(
+              item.attributes.monint_Ss_number_201912121702032.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Sr: item.attributes.monint_Sr_number_201912121702035
+          ? Number(
+              item.attributes.monint_Sr_number_201912121702035.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        kSv: item.attributes.monint_kSv_number_201912121702029
+          ? Number(
+              item.attributes.monint_kSv_number_201912121702029.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        kSs: item.attributes.monint_kSs_number_201912121702033
+          ? Number(
+              item.attributes.monint_kSs_number_201912121702033.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        kSr: item.attributes.monint_kSr_number_201912121702037
+          ? Number(
+              item.attributes.monint_kSr_number_201912121702037.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Sinf: item.attributes.monint_Sinf_number_201912121702038
+          ? Number(
+              item.attributes.monint_Sinf_number_201912121702038.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        dSv: item.attributes.monint_dSv_number_201912121702027
+          ? Number(
+              item.attributes.monint_dSv_number_201912121702027.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Spmin: item.attributes.monint_Spmin_number_201912121753281
+          ? Number(
+              item.attributes.monint_Spmin_number_201912121753281.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Spmax: item.attributes.monint_Spmax_number_201912121756330
+          ? Number(
+              item.attributes.monint_Spmax_number_201912121756330.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
+        Somin: item.attributes.monint_Somin_number_201912121743338
+          ? Number(
+              item.attributes.monint_Somin_number_201912121743338.replace(
+                /,/,
+                '.',
+              ),
+            )
+          : null,
       }));
       return items;
     })
@@ -153,8 +225,10 @@ export const getMonitoringInterestTriggers = (): Promise<MonInterestTriggerData[
             .monint_startevent_startphase_singlevaluelist_201912031300515 &&
           getPhase(
             item.attributes
-              .monint_startevent_startphase_singlevaluelist_201912031300515 ? item.attributes
-              .monint_startevent_startphase_singlevaluelist_201912031300515 : 'validation',
+              .monint_startevent_startphase_singlevaluelist_201912031300515
+              ? item.attributes
+                  .monint_startevent_startphase_singlevaluelist_201912031300515
+              : 'validation',
           ),
         phaseSkips: item.attributes
           .monint_startevent_passphases_multivaluelist_201912031300516
